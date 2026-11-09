@@ -8,10 +8,10 @@
 # moving files.
 #
 # Usage (from anywhere in the repository):
-#   sudo ./code/nginx/setup-nginx.sh [--install] [--port 8080]
+#   sudo ./code/nginx/setup-nginx.sh [--install] [--port 8180]
 #
 #   --install   install nginx, php-fpm, php-mysql, and curl with apt first
-#   --port N    port to listen on (default 8080, localhost only)
+#   --port N    port to listen on (default 8180, localhost only)
 #
 # Database settings: the first run asks for the MySQL user and password and
 # saves them in config.php (not committed to Git). To skip the questions,
@@ -27,7 +27,7 @@ PUBLIC_DIR="$HERE/public"        # folder NGINX serves
 CONFIG_FILE="$HERE/config.php"   # database settings for PHP (not in Git)
 SITE_NAME=csc640                 # file name under /etc/nginx/sites-available
 WEB_USER=www-data                # user that NGINX and PHP-FPM run as
-PORT=8080
+PORT=8180
 INSTALL=false
 # ------------------------------------------------------------------------------
 

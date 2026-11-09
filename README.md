@@ -4,7 +4,7 @@ CSC 640 High Quality Software Product, Option 2 (REST API)
 
 IT Operations runs dozens of administrative PowerShell scripts that write structured logging events (runs, log entries, exceptions, and performance metrics) to a MySQL database. Today the only way to read those logs is to query SQL directly.
 
-This project builds a REST API that serves the log data as JSON, protected by bearer tokens, plus a simple HTML/JavaScript page that calls the API and displays the results.
+This project builds a REST API that serves the log data as JSON, protected by bearer tokens, plus HTML/JavaScript pages that call the API to browse runs, logs, and reports.
 
 The project is built in two stages that pass the same acceptance tests:
 
@@ -56,8 +56,6 @@ presentation/     Marp presentation
 
 ## Setup (Stage 1)
 
-> These instructions are being written alongside Stage 1 and will be completed by Milestone 3.
-
 **Prerequisites:**
 - PHP 8.x with the PDO MySQL extension.
 - NGINX.
@@ -72,13 +70,36 @@ presentation/     Marp presentation
    mysql -u root -p < code/database/Deploy-InfraLogging.mysql.sql
    ```
 
-2. Create a MySQL account for the API. It needs EXECUTE on the logging procedures and SELECT on the tables, including `ApiUser` for login.
+2. Create a MySQL account for the API with only the rights it needs, SELECT on the tables (including `ApiUser` for login) and EXECUTE on the logging procedures:
 
-3. Copy `.env.example` to `.env` and set the database connection values and `JWT_SECRET`.
+   ```sql
+   CREATE USER 'infralog_api'@'localhost' IDENTIFIED BY '<password>';
+   GRANT SELECT, EXECUTE ON InfrastructureLogging.* TO 'infralog_api'@'localhost';
+   ```
 
-4. Point NGINX at `code/stage1/public` and route `/api/` requests to PHP-FPM. The exact configuration file is still to come.
+3. Copy `code/stage1/.env.example` to `code/stage1/.env` and set the database connection values and `JWT_SECRET`.
+
+4. Install the NGINX site from `code/stage1/nginx/infralogging.conf`. Set `root` to the absolute path of `code/stage1/public` and match the PHP-FPM socket to your PHP version, then run `sudo nginx -t && sudo systemctl reload nginx`.
+
+   For quick local testing without NGINX, PHP's built-in server also works. The workers setting lets it handle the browser's parallel requests:
+
+   ```bash
+   PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:8180 -t code/stage1/public code/stage1/public/index.php
+   ```
 
 5. Create API user accounts out of band. There is no registration endpoint. Store passwords as hashes from PHP's `password_hash()`.
+
+## Web Pages
+
+Open the server's address in a browser (for example `http://localhost:8180/`) and sign in with an API account. The pages call the same REST API as the tests:
+
+- **Runs:** run history with filters by script, status, and date, plus paging.
+- **Run details:** run information, then the run's logs (as a console transcript, filterable by level), exceptions, and metrics.
+- **Scripts:** the script catalog, and each script's run counts and latest run.
+- **Reports:** the execution summary and the scripts with the most failures, filterable by date and team.
+- **Start a run, finish a run, and add a log entry:** shown only to accounts with write scope.
+
+The pages are plain HTML, CSS, and JavaScript in `code/stage1/public` (`index.html` and `assets/`), with no build step. The sign-in token is kept in the browser tab's session storage and cleared when the tab closes.
 
 ## Running the Acceptance Tests
 
@@ -86,7 +107,7 @@ The same tests run against both stages; only `BASE` changes. The runner resets t
 
 ```bash
 export JWT_SECRET='<same value as the server .env>'
-BASE=http://localhost:8080 ./code/tests/acceptance.sh | tee code/results/stage1-$(date +%F).txt
+BASE=http://localhost:8180 ./code/tests/acceptance.sh | tee code/results/stage1-$(date +%F).txt
 ```
 
 The results of each run are recorded in the Results section of [acceptance.md](plan/acceptance.md).
@@ -106,6 +127,8 @@ I used Claude (Anthropic) for the following:
 - Converting the original SQL Server deployment script to MySQL.
 - Adding the `ApiUser` login table to the schema.
 - Drafting the acceptance tests, the seed data, and the `acceptance.sh` test runner.
+- Generating the Stage 1 PHP code in `code/stage1` (router, JWT authentication, validation, and controllers).
+- Generating the web pages in `code/stage1/public` (`index.html`, `assets/app.js`, `assets/styles.css`).
 - Reviewing homework submissions against the course requirements.
 
 I reviewed and edited all AI-generated material and am responsible for it, and I can explain how the code and tests work. Further AI assistance will be listed here as the project continues.

@@ -3,14 +3,14 @@
 These tests define when an API endpoint is "done." The same tests run, unchanged, against **Stage 1** (raw PHP + MySQL behind NGINX) and **Stage 2** (Laravel). Only the base URL changes between stages.
 
 - **Scope:** the 13 APIs approved in the HW1 proposal (`E00`–`E12` below). `E00` is the login endpoint that issues the bearer tokens the other 12 APIs require.
-- **Runner:** `tests/acceptance.sh` (full script in the appendix). It checks both the HTTP status and the JSON content of every response, prints `PASS`/`FAIL` per test, and exits nonzero if any test fails.
+- **Runner:** `code/tests/acceptance.sh` (full script in the appendix). It checks both the HTTP status and the JSON content of every response, prints `PASS`/`FAIL` per test, and exits nonzero if any test fails.
 - **Rule:** a failing test is fixed in the code, never by weakening the test.
 
 ---
 
 ## 1. API Contract Assumed by the Tests
 
-**Base URL.** Set with the `BASE` environment variable (for example `http://localhost:8080` for Stage 1).
+**Base URL.** Set with the `BASE` environment variable (for example `http://localhost:8180` for Stage 1).
 
 **Authentication.** Every endpoint except `POST /api/v1/auth/login` requires `Authorization: Bearer <JWT>`. A client gets a token by posting a username and password to the login endpoint. The server looks the user up in the `ApiUser` table and verifies the password against the stored bcrypt hash with `password_verify()`.
 
@@ -53,7 +53,7 @@ User accounts are created out of band by an administrator, so there is no regist
 
 ## 2. Data Setup
 
-The runner resets the database to this known state before every run, so the results are repeatable. Save the SQL below as `tests/seed.sql`. It assumes the `InfrastructureLogging` schema from `Deploy-InfraLogging.mysql.sql` is already deployed.
+The runner resets the database to this known state before every run, so the results are repeatable. Save the SQL below as `code/tests/seed.sql`. It assumes the `InfrastructureLogging` schema from `Deploy-InfraLogging.mysql.sql` is already deployed.
 
 ```sql
 USE InfrastructureLogging;
@@ -276,11 +276,11 @@ Every endpoint except the login endpoint is protected. The success cases in Sect
 ```bash
 # Stage 1 (raw PHP behind NGINX)
 export JWT_SECRET='<same value as the server .env>'
-BASE=http://localhost:8080 ./tests/acceptance.sh | tee results/stage1-$(date +%F).txt
+BASE=http://localhost:8180 ./code/tests/acceptance.sh | tee code/results/stage1-$(date +%F).txt
 
 # Stage 2 (Laravel); MYSQL points at the Docker database if needed
 BASE=http://localhost:8081 MYSQL="docker compose exec -T db mysql -uroot -p<password>" \
-  ./tests/acceptance.sh | tee results/stage2-$(date +%F).txt
+  ./code/tests/acceptance.sh | tee code/results/stage2-$(date +%F).txt
 ```
 
 The exit code is 0 only when all 73 tests pass. If the database reset or the setup logins fail, the runner stops with exit code 2.
@@ -293,20 +293,20 @@ Record every run here and keep the matching output file in `results/`.
 
 | Date | Stage | Command | Expected | Actual | Output file / notes |
 |---|---|---|---|---|---|
-| | Stage 1 | `BASE=http://localhost:8080 ./tests/acceptance.sh` | 73 passed, 0 failed, exit 0 | | |
-| | Stage 2 | `BASE=http://localhost:8081 ./tests/acceptance.sh` | 73 passed, 0 failed, exit 0 | | |
+| | Stage 1 | `BASE=http://localhost:8180 ./code/tests/acceptance.sh` | 73 passed, 0 failed, exit 0 | | |
+| | Stage 2 | `BASE=http://localhost:8181 ./code/tests/acceptance.sh` | 73 passed, 0 failed, exit 0 | | |
 
 ---
 
-## Appendix: `tests/acceptance.sh`
+## Appendix: `code/tests/acceptance.sh`
 
 ```bash
 #!/usr/bin/env bash
 # Acceptance tests for the InfraLogging REST API.
-# Usage: BASE=http://localhost:8080 ./tests/acceptance.sh
+# Usage: BASE=http://localhost:8180 ./code/tests/acceptance.sh
 set -u
 
-BASE="${BASE:-http://localhost:8080}"
+BASE="${BASE:-http://localhost:8180}"
 MYSQL="${MYSQL:-mysql}"   # credentials come from ~/.my.cnf or the MYSQL variable
 DIR="$(cd "$(dirname "$0")" && pwd)"
 BODY="$(mktemp)"
