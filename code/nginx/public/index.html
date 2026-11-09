@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NGINX test</title>
+  <style>
+    body { font: 16px/1.5 system-ui, sans-serif; max-width: 640px; margin: 48px auto; padding: 0 16px; color: #1b2a3a; }
+    h1 { font-size: 1.5rem; }
+    a { color: #1d6bb0; }
+  </style>
+</head>
+<body>
+  <h1>NGINX is serving this page</h1>
+  <!-- code/nginx/setup-nginx.sh looks for this marker to confirm NGINX works. -->
+  <p id="nginx-ok">This is a static HTML file, so seeing it means NGINX is working.</p>
+  <p>Next, <a href="test.php">check PHP and MySQL</a>.</p>
+</body>
+</html>
