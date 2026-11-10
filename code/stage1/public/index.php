@@ -29,6 +29,8 @@ use InfraLogging\Router;
 use InfraLogging\Controllers\AuthController;
 use InfraLogging\Controllers\ScriptController;
 use InfraLogging\Controllers\RunController;
+use InfraLogging\Controllers\ExceptionController;
+use InfraLogging\Controllers\MetricController;
 
 
 $app = new App(dirname(__DIR__));
@@ -41,6 +43,8 @@ $router->add('GET',   '/api/v1/runs',                      [RunController::class
 $router->add('POST',  '/api/v1/runs',                      [RunController::class, 'store']);
 $router->add('GET',   '/api/v1/runs/{runId}',              [RunController::class, 'show']);
 $router->add('PATCH', '/api/v1/runs/{runId}',              [RunController::class, 'update']);
+$router->add('GET',   '/api/v1/runs/{runId}/exceptions',   [ExceptionController::class, 'index']);
+$router->add('GET',   '/api/v1/runs/{runId}/metrics',      [MetricController::class, 'index']);
 
 
 try {
