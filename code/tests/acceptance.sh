@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Acceptance tests for the InfraLogging REST API.
-# Usage: BASE=http://localhost:8080 ./code/tests/acceptance.sh
+# Usage: BASE=http://localhost:8180 ./code/tests/acceptance.sh
 set -u
 
-BASE="${BASE:-http://localhost:8080}"
+BASE="${BASE:-http://localhost:8180}"
 MYSQL="${MYSQL:-mysql}"   # credentials come from ~/.my.cnf or the MYSQL variable
 DIR="$(cd "$(dirname "$0")" && pwd)"
 BODY="$(mktemp)"
