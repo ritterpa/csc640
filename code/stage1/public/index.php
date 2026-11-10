@@ -27,12 +27,15 @@ use InfraLogging\Request;
 use InfraLogging\Response;
 use InfraLogging\Router;
 use InfraLogging\Controllers\AuthController;
+use InfraLogging\Controllers\ScriptController;
 
 
 $app = new App(dirname(__DIR__));
 $router = new Router($app);
 
 $router->add('POST',  '/api/v1/auth/login',                [AuthController::class, 'login']);
+$router->add('GET',   '/api/v1/scripts',                   [ScriptController::class, 'index']);
+$router->add('GET',   '/api/v1/scripts/{scriptId}',        [ScriptController::class, 'show']);
 
 
 try {
