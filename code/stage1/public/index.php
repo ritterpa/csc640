@@ -32,6 +32,7 @@ use InfraLogging\Controllers\RunController;
 use InfraLogging\Controllers\ExceptionController;
 use InfraLogging\Controllers\MetricController;
 use InfraLogging\Controllers\LogController;
+use InfraLogging\Controllers\ReportController;
 
 
 $app = new App(dirname(__DIR__));
