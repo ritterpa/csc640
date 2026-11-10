@@ -48,6 +48,8 @@ $router->add('GET',   '/api/v1/runs/{runId}/exceptions',   [ExceptionController:
 $router->add('GET',   '/api/v1/runs/{runId}/metrics',      [MetricController::class, 'index']);
 $router->add('GET',   '/api/v1/runs/{runId}/logs',         [LogController::class, 'index']);
 $router->add('POST',  '/api/v1/runs/{runId}/logs',         [LogController::class, 'store']);
+$router->add('GET',   '/api/v1/reports/execution-summary', [ReportController::class, 'executionSummary']);
+$router->add('GET',   '/api/v1/reports/failing-scripts',   [ReportController::class, 'failingScripts']);
 
 
 try {
