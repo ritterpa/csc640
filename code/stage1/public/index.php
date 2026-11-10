@@ -28,6 +28,7 @@ use InfraLogging\Response;
 use InfraLogging\Router;
 use InfraLogging\Controllers\AuthController;
 use InfraLogging\Controllers\ScriptController;
+use InfraLogging\Controllers\RunController;
 
 
 $app = new App(dirname(__DIR__));
@@ -36,6 +37,10 @@ $router = new Router($app);
 $router->add('POST',  '/api/v1/auth/login',                [AuthController::class, 'login']);
 $router->add('GET',   '/api/v1/scripts',                   [ScriptController::class, 'index']);
 $router->add('GET',   '/api/v1/scripts/{scriptId}',        [ScriptController::class, 'show']);
+$router->add('GET',   '/api/v1/runs',                      [RunController::class, 'index']);
+$router->add('POST',  '/api/v1/runs',                      [RunController::class, 'store']);
+$router->add('GET',   '/api/v1/runs/{runId}',              [RunController::class, 'show']);
+$router->add('PATCH', '/api/v1/runs/{runId}',              [RunController::class, 'update']);
 
 
 try {
