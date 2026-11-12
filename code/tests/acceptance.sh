@@ -1,16 +1,59 @@
 #!/usr/bin/env bash
 # Acceptance tests for the InfraLogging REST API.
-# Usage: BASE=http://localhost:8180 ./code/tests/acceptance.sh
+#
+# Usage (one command, from anywhere in the repository):
+#   ./code/tests/acceptance.sh
+#
+# Everything it needs is found automatically. Override any of these when needed:
+#   BASE        API address           (default http://localhost:8180)
+#   JWT_SECRET  server's token secret (default: read from code/stage1/.env)
+#   MYSQL       command that runs SQL (default: mysql if it can log in, else sudo mysql)
+# Example for Stage 2:
+#   BASE=http://localhost:8081 MYSQL="docker compose exec -T db mysql -uroot -psecret" ./code/tests/acceptance.sh
+#
+# Exit codes: 0 = all tests passed, 1 = some tests failed, 2 = setup problem.
 set -u
 
-BASE="${BASE:-http://localhost:8180}"
-MYSQL="${MYSQL:-mysql}"   # credentials come from ~/.my.cnf or the MYSQL variable
 DIR="$(cd "$(dirname "$0")" && pwd)"
+BASE="${BASE:-http://localhost:8180}"
 BODY="$(mktemp)"
 trap 'rm -f "$BODY"' EXIT
 
+setup_error() { echo "SETUP ERROR: $*" >&2; exit 2; }
+
+# ---- Preflight: tools, settings, and a running API ----
+for tool in curl jq openssl; do
+  command -v "$tool" >/dev/null || setup_error "$tool is not installed (sudo apt install $tool)."
+done
+
+# The secret signs the expired-token test case; it must match the server's.
+if [ -z "${JWT_SECRET:-}" ]; then
+  [ -r "$ENV_FILE" ] || setup_error "Cannot read $ENV_FILE. Run code/nginx/setup-nginx.sh, or set JWT_SECRET."
+  JWT_SECRET=$(sed -nE 's/^[[:space:]]*JWT_SECRET[[:space:]]*=[[:space:]]*//p' "$ENV_FILE" | tail -n 1 | tr -d "\"'\r")
+  [ -n "$JWT_SECRET" ] || setup_error "JWT_SECRET is empty in $ENV_FILE."
+fi
+
+# Resetting the database needs MySQL admin rights. On Ubuntu/WSL, root logs in
+# through sudo, so fall back to "sudo mysql" (it asks for your password once).
+if [ -z "${MYSQL:-}" ]; then
+  command -v mysql >/dev/null || setup_error "The mysql client is not installed (sudo apt install mysql-client)."
+  if mysql_error=$(mysql -e 'SELECT 1' 2>&1 >/dev/null); then
+    MYSQL="mysql"
+  elif echo "$mysql_error" | grep -qE "Can't connect.*\((2|111)\)"; then
+    # (2) = no socket file, (111) = connection refused: the server is down.
+    setup_error "The MySQL server is not running (sudo service mysql start)."
+  elif command -v sudo >/dev/null; then
+    MYSQL="sudo mysql"
+  else
+    setup_error "mysql cannot log in ($mysql_error). Set MYSQL to a command that can, for example MYSQL=\"mysql -u root -p\"."
+  fi
+fi
+
+status=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/api/v1/") || status=000
+[ "$status" != "000" ] || setup_error "Cannot reach the API at $BASE. Is NGINX running? (sudo ./code/nginx/setup-nginx.sh)"
+
 # ---- Data setup ----
-$MYSQL < "$DIR/seed.sql" || { echo "Database reset failed"; exit 2; }
+$MYSQL < "$DIR/seed.sql" || setup_error "The database reset failed (command: $MYSQL)."
 
 R1=11111111-1111-4111-8111-111111111111
 R2=22222222-2222-4222-8222-222222222222
@@ -25,10 +68,9 @@ login() {
 }
 READ=$(login reader 'ReaderPass123!')
 WRITE=$(login writer 'WriterPass123!')
-[ -n "$READ" ] && [ -n "$WRITE" ] || { echo "Setup login failed"; exit 2; }
+[ -n "$READ" ] && [ -n "$WRITE" ] || setup_error "Logging in as reader/writer failed. Check that the login route is in public/index.php."
 
 # Build a correctly signed token that expired an hour ago
-: "${JWT_SECRET:?Set JWT_SECRET to the same secret the server uses}"
 b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
 now=$(date +%s)
 jwt_head=$(printf '{"alg":"HS256","typ":"JWT"}' | b64url)
