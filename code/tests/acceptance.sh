@@ -5,7 +5,7 @@
 #   ./code/tests/acceptance.sh
 #
 # Everything it needs is found automatically. Override any of these when needed:
-#   BASE        API address           (default http://localhost:8180)
+#   BASE        API address           (default http://localhost:8080)
 #   JWT_SECRET  server's token secret (default: read from code/stage1/.env)
 #   MYSQL       command that runs SQL (default: mysql if it can log in, else sudo mysql)
 # Example for Stage 2:
@@ -15,7 +15,8 @@
 set -u
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
-BASE="${BASE:-http://localhost:8180}"
+BASE="${BASE:-http://localhost:8080}"
+ENV_FILE="$DIR/../stage1/.env"
 BODY="$(mktemp)"
 trap 'rm -f "$BODY"' EXIT
 
