@@ -45,7 +45,8 @@ All endpoints except login require `Authorization: Bearer <token>`. Read endpoin
 
 ```text
 code/
-  database/       Deploy-InfraLogging.mysql.sql (schema)
+  database/       Deploy-InfraLogging.mysql.sql (schema), setup-database.sh config script
+  nginx/          setup-nginx.sh config script
   stage1/         Raw PHP API (Stage 1)
   stage2/         Laravel API (Stage 2)
   tests/          acceptance.sh, seed.sql
