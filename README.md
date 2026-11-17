@@ -57,37 +57,55 @@ presentation/     Marp presentation
 ## Setup (Stage 1)
 
 **Prerequisites:**
-- PHP 8.x with the PDO MySQL extension.
-- NGINX.
-- MySQL 8.0.19 or later.
-- `curl`, `jq`, and `openssl`, for the acceptance tests.
+- The setup instructions assume you have a fresh install of Ubuntu running in WSL. No other prerequisites are assumed.
 
 **Steps:**
 
-1. Deploy the database schema:
+1. Install the basic packages needed for the project: Mysql, nginx, php-fpm, php-mysql, curl, jq, openssl, and git.
 
    ```bash
-   mysql -u root -p < code/database/Deploy-InfraLogging.mysql.sql
+   sudo apt update
+   sudo apt install mysql-server nginx php-fpm php-mysql curl jq openssl git -y
+   sudo service mysql start
+
    ```
 
-2. Create a MySQL account for the API with only the rights it needs, SELECT on the tables (including `ApiUser` for login) and EXECUTE on the logging procedures:
-
-   ```sql
-   CREATE USER 'infralog_api'@'localhost' IDENTIFIED BY '<password>';
-   GRANT SELECT, EXECUTE ON InfrastructureLogging.* TO 'infralog_api'@'localhost';
-   ```
-
-3. Copy `code/stage1/.env.example` to `code/stage1/.env` and set the database connection values and `JWT_SECRET`.
-
-4. Install the NGINX site from `code/stage1/nginx/infralogging.conf`. Set `root` to the absolute path of `code/stage1/public` and match the PHP-FPM socket to your PHP version, then run `sudo nginx -t && sudo systemctl reload nginx`.
-
-   For quick local testing without NGINX, PHP's built-in server also works. The workers setting lets it handle the browser's parallel requests:
+2. Make projects directory in user's home directory:
 
    ```bash
-   PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:8180 -t code/stage1/public code/stage1/public/index.php
+   cd ~
+   mkdir projects
+   cd projects
+
    ```
 
-5. Create API user accounts out of band. There is no registration endpoint. Store passwords as hashes from PHP's `password_hash()`.
+3. Clone the repo with git:
+   ```bash
+   git clone https://github.com/ritterpa/csc640
+   cd csc640
+
+   ```
+
+4. Setup the database:
+   ```bash
+   sudo ./code/database/setup-database.sh --test-logins
+  
+   ```
+
+5. Setup nginx:
+   ```bash
+   sudo ./code/nginx/setup-nginx.sh
+
+   ```
+
+6. Run acceptance tests
+   ```bash
+   ./code/tests/acceptance.sh
+
+   ```
+    Verify that all 73 tests passed and that 0 failed.
+
+ 7. Open the site in a browser at http://localhost:8180/
 
 ## Web Pages
 
@@ -106,8 +124,7 @@ The pages are plain HTML, CSS, and JavaScript in `code/stage1/public` (`index.ht
 The same tests run against both stages; only `BASE` changes. The runner resets the database to known seed data, logs in as the seeded test users, and exits nonzero if any test fails.
 
 ```bash
-export JWT_SECRET='<same value as the server .env>'
-BASE=http://localhost:8180 ./code/tests/acceptance.sh | tee code/results/stage1-$(date +%F).txt
+./code/tests/acceptance.sh | tee code/results/stage1-$(date +%F).txt
 ```
 
 The results of each run are recorded in the Results section of [acceptance.md](plan/acceptance.md).
