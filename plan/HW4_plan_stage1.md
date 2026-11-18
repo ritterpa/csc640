@@ -26,8 +26,8 @@ marp: true
 
 1. **What:** NGINX, PHP, and MySQL running; schema and seed loaded; login and the token check working; E00–E04 tests passing.
 2. **When (Plan):**  Nov 14, 2026
-3. **When (Actual):** TBD  
-4. **Comment:** 
+3. **When (Actual):** Nov 10, 2026 
+4. **Comment:** Completed in [commit 87b0c4b](https://github.com/ritterpa/csc640/tree/87b0c4b7a7bee680657dd504a2809ac1eb9dfc4d). Acceptance suite re-run against that commit on Nov 16: all 28 E00–E04 tests pass [code/results/milestone1-2026-11-10.txt](https://github.com/ritterpa/csc640/blob/main/code/results/stage1-milestone1-2026-11-10.txt); the other failures are endpoints scheduled for Milestone 2.
 
 ---
 
@@ -35,8 +35,8 @@ marp: true
 
 1. **What:**  All 13 endpoints done and all 73 tests passing on Stage 1, with results recorded in acceptance.md.
 2. **When (Plan):**  Nov 18, 2026
-3. **When (Actual):** TBD  
-4. **Comment:**
+3. **When (Actual):** Nov 10, 2026  
+4. **Comment:** Completed in [commit 79f1ab8](https://github.com/ritterpa/csc640/tree/79f1ab8f4f6cd43128d8621eed3d5591879cec11). Acceptance suite re-run against that commit on Nov 16: all 73 tests pass [code/results/milestone2-2026-11-10.txt](https://github.com/ritterpa/csc640/blob/main/code/results/stage1-milestone2-2026-11-10.txt).
 
 ---
 
