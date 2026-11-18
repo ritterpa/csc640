@@ -1,0 +1,77 @@
+Re-run on 2026-11-17 18:36:32 of commit 87b0c4b (committed 2026-11-10 14:43, "RunController added.")
+PASS E01-TM
+PASS E01-TI
+PASS E02-TM
+PASS E02-TI
+PASS E03-TM
+PASS E03-TI
+PASS E04-TM
+PASS E04-TI
+PASS E05-TM
+PASS E05-TI
+PASS E06-TM
+PASS E06-TI
+FAIL E07-TM: GET /api/v1/runs/11111111-1111-4111-8111-111111111111/logs -> status 404 (expected 401); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E07-TI: GET /api/v1/runs/11111111-1111-4111-8111-111111111111/logs -> status 404 (expected 401); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E08-TM: POST /api/v1/runs/11111111-1111-4111-8111-111111111111/logs -> status 404 (expected 401); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E08-TI: POST /api/v1/runs/11111111-1111-4111-8111-111111111111/logs -> status 404 (expected 401); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E09-TM: GET /api/v1/runs/22222222-2222-4222-8222-222222222222/exceptions -> status 404 (expected 401); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E09-TI: GET /api/v1/runs/22222222-2222-4222-8222-222222222222/exceptions -> status 404 (expected 401); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E10-TM: GET /api/v1/runs/11111111-1111-4111-8111-111111111111/metrics -> status 404 (expected 401); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E10-TI: GET /api/v1/runs/11111111-1111-4111-8111-111111111111/metrics -> status 404 (expected 401); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E11-TM: GET /api/v1/reports/execution-summary -> status 404 (expected 401); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E11-TI: GET /api/v1/reports/execution-summary -> status 404 (expected 401); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E12-TM: GET /api/v1/reports/failing-scripts -> status 404 (expected 401); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E12-TI: GET /api/v1/reports/failing-scripts -> status 404 (expected 401); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+PASS E01-TX
+PASS E05-TS
+PASS E06-TS
+FAIL E08-TS: POST /api/v1/runs/11111111-1111-4111-8111-111111111111/logs -> status 404 (expected 403); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+PASS E00-S1
+PASS E00-S2
+PASS E00-F1
+PASS E00-F2
+PASS E00-F3
+PASS E00-F4
+PASS E01-S1
+PASS E01-F1
+PASS E02-S1
+PASS E02-F1
+PASS E02-F2
+PASS E03-S1
+PASS E03-S2
+PASS E03-S3
+PASS E03-F1
+PASS E03-F2
+PASS E04-S1
+PASS E04-F1
+PASS E04-F2
+FAIL E07-S1: GET /api/v1/runs/11111111-1111-4111-8111-111111111111/logs -> status 404 (expected 200); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E07-S2: GET /api/v1/runs/11111111-1111-4111-8111-111111111111/logs?level=Warning -> status 404 (expected 200); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+PASS E07-F1
+FAIL E07-F2: GET /api/v1/runs/11111111-1111-4111-8111-111111111111/logs?level=Loud -> status 404 (expected 400); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E09-S1: GET /api/v1/runs/22222222-2222-4222-8222-222222222222/exceptions -> status 404 (expected 200); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E09-S2: GET /api/v1/runs/11111111-1111-4111-8111-111111111111/exceptions -> status 404 (expected 200); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+PASS E09-F1
+FAIL E10-S1: GET /api/v1/runs/11111111-1111-4111-8111-111111111111/metrics -> status 404 (expected 200); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+PASS E10-F1
+FAIL E11-S1: GET /api/v1/reports/execution-summary?from=2026-11-01&to=2026-11-30 -> status 404 (expected 200); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E11-S2: GET /api/v1/reports/execution-summary?team=Desktop -> status 404 (expected 200); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E11-F1: GET /api/v1/reports/execution-summary?from=2026-11-30&to=2026-11-01 -> status 404 (expected 400); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E11-F2: GET /api/v1/reports/execution-summary?from=yesterday -> status 404 (expected 400); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E12-S1: GET /api/v1/reports/failing-scripts?limit=5 -> status 404 (expected 200); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E12-F1: GET /api/v1/reports/failing-scripts?limit=0 -> status 404 (expected 400); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+PASS E05-S1
+PASS E05-S2
+PASS E05-V1
+PASS E05-F1
+PASS E05-F2
+PASS E06-S1
+PASS E06-F1
+PASS E06-F2
+FAIL E08-S1: POST /api/v1/runs/11111111-1111-4111-8111-111111111111/logs -> status 404 (expected 201); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+FAIL E08-F1: POST /api/v1/runs/11111111-1111-4111-8111-111111111111/logs -> status 404 (expected 400); body: {"error":{"code":"NOT_FOUND","message":"No API endpoint matches this path."}}
+PASS E08-F2
+----
+46 passed, 27 failed
+Milestone 1 tests (E00-E04): 28 of 28 passed
