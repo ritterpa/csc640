@@ -1,26 +1,68 @@
 #!/usr/bin/env bash
 # Acceptance tests for the InfraLogging REST API.
 #
-# Usage (one command, from anywhere in the repository):
-#   ./code/tests/acceptance.sh
+# Usage (from anywhere in the repository):
+#   ./code/tests/acceptance.sh              # Stage 1: raw PHP + MySQL behind NGINX
+#   ./code/tests/acceptance.sh --stage 2    # Stage 2: Laravel
 #
-# Everything it needs is found automatically. Override any of these when needed:
-#   BASE        API address           (default http://localhost:8180)
-#   JWT_SECRET  server's token secret (default: read from code/stage1/.env)
+# Both stages run the same 73 tests. Only the settings in stage_settings()
+# below differ. Any of these can also be overridden for a single run:
+#   BASE        API address
+#   JWT_SECRET  server's token secret (default: read from the stage's .env)
 #   MYSQL       command that runs SQL (default: mysql if it can log in, else sudo mysql)
-# Example for Stage 2:
-#   BASE=http://localhost:8081 MYSQL="docker compose exec -T db mysql -uroot -psecret" ./code/tests/acceptance.sh
+# Example: BASE=http://localhost:9000 ./code/tests/acceptance.sh --stage 2
 #
 # Exit codes: 0 = all tests passed, 1 = some tests failed, 2 = setup problem.
 set -u
 
-DIR="$(cd "$(dirname "$0")" && pwd)"
-BASE="${BASE:-http://localhost:8180}"
-ENV_FILE="$DIR/../stage1/.env"
+DIR="$(cd "$(dirname "$0")" && pwd)"   # code/tests
+CODE="$(cd "$DIR/.." && pwd)"          # code
+
+# ---- Per-stage settings ----
+# The Stage 2 values are placeholders until Stage 2 is built (HW4 Part 3).
+stage_settings() {
+  case "$1" in
+    1)
+      STAGE_NAME="Stage 1 (raw PHP + MySQL behind NGINX)"
+      STAGE_BASE="http://localhost:8180"
+      STAGE_ENV="$CODE/stage1/.env"
+      STAGE_MYSQL=""        # empty = detect: mysql, else sudo mysql
+      STAGE_SETUP="sudo ./code/nginx/setup-nginx.sh"
+      ;;
+    2)
+      STAGE_NAME="Stage 2 (Laravel)"
+      STAGE_BASE="http://localhost:8181"
+      STAGE_ENV="$CODE/stage2/.env"
+      STAGE_MYSQL=""        # for Docker, e.g.: docker compose exec -T db mysql -uroot -p<password>
+      STAGE_SETUP="the Stage 2 setup steps in the README"
+      ;;
+    *) return 1 ;;
+  esac
+}
+
+STAGE=1
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --stage)   [ $# -ge 2 ] || { echo "--stage needs a value: 1 or 2" >&2; exit 2; }; STAGE=$2; shift 2 ;;
+    --stage=*) STAGE=${1#--stage=}; shift ;;
+    -h|--help) sed -n '2,/^set -u/p' "$0" | sed '$d; s/^# \{0,1\}//'; exit 0 ;;
+    *)         echo "Unknown option: $1 (use --help)" >&2; exit 2 ;;
+  esac
+done
+stage_settings "$STAGE" || { echo "Unknown stage: $STAGE (use 1 or 2)" >&2; exit 2; }
+
+BASE="${BASE:-$STAGE_BASE}"
+ENV_FILE="$STAGE_ENV"
+MYSQL="${MYSQL:-$STAGE_MYSQL}"
 BODY="$(mktemp)"
 trap 'rm -f "$BODY"' EXIT
 
 setup_error() { echo "SETUP ERROR: $*" >&2; exit 2; }
+
+# Record what was tested, so a saved results file identifies its stage and code version.
+echo "Acceptance tests: $STAGE_NAME at $BASE"
+echo "Code version: $(git -C "$DIR" describe --tags --always --dirty 2>/dev/null || echo unknown); run $(date '+%F %T')"
+echo "----"
 
 # ---- Preflight: tools, settings, and a running API ----
 for tool in curl jq openssl; do
@@ -29,8 +71,10 @@ done
 
 # The secret signs the expired-token test case; it must match the server's.
 if [ -z "${JWT_SECRET:-}" ]; then
-  [ -r "$ENV_FILE" ] || setup_error "Cannot read $ENV_FILE. Run code/nginx/setup-nginx.sh, or set JWT_SECRET."
-  JWT_SECRET=$(sed -nE 's/^[[:space:]]*JWT_SECRET[[:space:]]*=[[:space:]]*//p' "$ENV_FILE" | tail -n 1 | tr -d "\"'\r")
+  [ -r "$ENV_FILE" ] || setup_error "Cannot read $ENV_FILE. Set up $STAGE_NAME first ($STAGE_SETUP), or set JWT_SECRET."
+  # Same rules as src/Config.php: trim spaces, then one pair of surrounding quotes.
+  JWT_SECRET=$(sed -nE 's/^[[:space:]]*JWT_SECRET[[:space:]]*=[[:space:]]*//p' "$ENV_FILE" | tail -n 1 \
+    | tr -d '\r' | sed -E "s/[[:space:]]+\$//; s/^[\"'](.*)[\"']\$/\\1/")
   [ -n "$JWT_SECRET" ] || setup_error "JWT_SECRET is empty in $ENV_FILE."
 fi
 
@@ -51,7 +95,7 @@ if [ -z "${MYSQL:-}" ]; then
 fi
 
 status=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/api/v1/") || status=000
-[ "$status" != "000" ] || setup_error "Cannot reach the API at $BASE. Is NGINX running? (sudo ./code/nginx/setup-nginx.sh)"
+[ "$status" != "000" ] || setup_error "Cannot reach the $STAGE_NAME API at $BASE. Is it running? ($STAGE_SETUP)"
 
 # ---- Data setup ----
 $MYSQL < "$DIR/seed.sql" || setup_error "The database reset failed (command: $MYSQL)."

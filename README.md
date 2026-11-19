@@ -123,11 +123,14 @@ The pages are plain HTML, CSS, and JavaScript in `code/stage1/public` (`index.ht
 
 ## Running the Acceptance Tests
 
-The same tests run against both stages; only `BASE` changes. The runner resets the database to known seed data, logs in as the seeded test users, and exits nonzero if any test fails.
+The same 73 tests run against both stages. The runner resets the database to known seed data, logs in as the seeded test users, and exits nonzero if any test fails.
 
 ```bash
-./code/tests/acceptance.sh | tee code/results/stage1-$(date +%F).txt
+./code/tests/acceptance.sh | tee code/results/stage1-$(date +%F).txt              # Stage 1 (default)
+./code/tests/acceptance.sh --stage 2 | tee code/results/stage2-$(date +%F).txt    # Stage 2 (Laravel, Part 3)
 ```
+
+Each stage's settings (API address, `.env` file, database command) are at the top of `code/tests/acceptance.sh`. The output starts by naming the stage and code version tested.
 
 The results of each run are recorded in the Results section of [acceptance.md](plan/acceptance.md).
 
