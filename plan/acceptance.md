@@ -282,7 +282,7 @@ Every endpoint except the login endpoint is protected. The success cases in Sect
 ./code/tests/acceptance.sh | tee code/results/stage2-$(date +%F).txt
 ```
 
-The exit code is 0 only when all 73 tests pass. If any test fails, the exit code is 1. If the database reset or the setup logins fail, the runner stops with exit code 2.
+The exit code is 0 only when all 73 tests pass. If any test fails, the exit code is 1.If a setup problem stops the run (for example MySQL not running or the API unreachable), it exits with code 2 and says why.
 
 ---
 
@@ -553,5 +553,4 @@ t E08-F2 POST /api/v1/runs/$RX/logs "$WRITE" 404 "$E404" '{"timestampUtc":"2026-
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
-
 ```
