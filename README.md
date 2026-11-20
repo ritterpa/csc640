@@ -166,7 +166,7 @@ I used Claude (Anthropic) for the following:
 - Generating the web pages in `code/stage1/public` (`index.html`, `assets/app.js`, `assets/styles.css`).
 - Writing the setup scripts `code/database/setup-database.sh` and `code/nginx/setup-nginx.sh`.
 - Making the test runner work as one command (reading the JWT secret from `.env`, falling back to `sudo mysql`, and checking the setup before testing).
-- Adding the --stage option to the test runner, so the testing config variables can be changed to work with both stages.
+- Adding the `--stage` option to the test runner, so the testing config variables can be changed to work with both stages.
 - Generating the Stage 1 tutorial in `presentation/`, with examples captured from the running API.
 - Drafting `stage1_evaluation.md`.
 - Reviewing homework submissions against the course requirements.
