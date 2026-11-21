@@ -15,7 +15,7 @@ marp: true
 ## Your HW4 Part 2 Submission Date
 
 1. **When (Plan):**  Nov 21, 2026
-2. **When (Actual):** TBD (record the actual completion date)
+2. **When (Actual):** Nov 21, 2026
 3. **Comment:**
 
 ---
@@ -44,7 +44,7 @@ marp: true
 
 1. **What:**  README with setup, run, and test instructions, plus stage1_evaluation.md ready.
 2. **When (Plan):**  Nov 21, 2026
-3. **When (Actual):** TBD  
+3. **When (Actual):** Nov 21, 2026  
 4. **Comment:**
 
 
