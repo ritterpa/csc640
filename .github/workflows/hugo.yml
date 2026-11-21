@@ -17,27 +17,46 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      site: ${{ steps.site.outputs.exists }}
     env:
       HUGO_VERSION: 0.140.0   # use the version `hugo version` reports on your machine
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive   # if your Hugo theme is a git submodule
+
+      # Until the Hugo site is committed (Stage 2 Milestone 4), skip the
+      # build instead of failing on every push.
+      - id: site
+        run: |
+          if [ -f presentation/site/hugo.toml ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No Hugo site yet (presentation/site/hugo.toml), so nothing to publish."
+          fi
+
       - name: Install Hugo
+        if: steps.site.outputs.exists == 'true'
         run: |
           wget -q -O hugo.deb "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb"
           sudo dpkg -i hugo.deb
       - id: pages
+        if: steps.site.outputs.exists == 'true'
         uses: actions/configure-pages@v5
       - name: Build the site
+        if: steps.site.outputs.exists == 'true'
         working-directory: presentation/site
         run: hugo --gc --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
       - uses: actions/upload-pages-artifact@v3
+        if: steps.site.outputs.exists == 'true'
         with:
           path: presentation/site/public
 
   deploy:
     needs: build
+    if: needs.build.outputs.site == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
