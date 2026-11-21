@@ -22,7 +22,7 @@ The project is built in two stages that pass the same acceptance tests:
 - [Stage 1 tutorial](presentation/stage1-tutorial.md) ([PDF](presentation/stage1-tutorial.pdf)): Marp slides explaining every endpoint's method, path, inputs, outputs, and authentication, with real success and failure examples.
 - [Saved test results](code/results/): output of each acceptance test run, including the milestone re-runs.
 - [Database schema](code/database/Deploy-InfraLogging.mysql.sql): tables, indexes, stored procedures, and the API login table.
-- [Documentation site](https://ritterpa.github.io/csc640-docs/) (Hugo on GitHub Pages; [source repository](https://github.com/ritterpa/csc640-docs)).
+- [Documentation site](https://ritterpa.github.io/csc640/) (Hugo on GitHub Pages, built from [`presentation/site/`](presentation/site/) by [GitHub Actions](.github/workflows/pages.yml) on every push).
 - [Canvas progress page](https://nku.instructure.com/courses/92884/pages/individual-project-progress-page-of-paul-ritter-in-csc640) (requires NKU Canvas login).
 
 ## APIs
