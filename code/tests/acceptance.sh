@@ -19,7 +19,7 @@ DIR="$(cd "$(dirname "$0")" && pwd)"   # code/tests
 CODE="$(cd "$DIR/.." && pwd)"          # code
 
 # ---- Per-stage settings ----
-# The Stage 2 values are placeholders until Stage 2 is built (HW4 Part 3).
+# Stage 2 runs from code/stage2/run.sh; its Docker settings come in Part 3.
 stage_settings() {
   case "$1" in
     1)
@@ -32,9 +32,9 @@ stage_settings() {
     2)
       STAGE_NAME="Stage 2 (Laravel)"
       STAGE_BASE="http://localhost:8181"
-      STAGE_ENV="$CODE/stage2/.env"
+      STAGE_ENV="$CODE/stage2/api/.env"   # the Laravel project created by code/stage2/run.sh
       STAGE_MYSQL=""        # for Docker, e.g.: docker compose exec -T db mysql -uroot -p<password>
-      STAGE_SETUP="the Stage 2 setup steps in the README"
+      STAGE_SETUP="./code/stage2/run.sh"
       ;;
     *) return 1 ;;
   esac
