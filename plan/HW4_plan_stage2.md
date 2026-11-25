@@ -28,10 +28,10 @@ style: |
    - `run.sh` is adapted from ASE 230 `run1-5.sh`, with an explanation and references.
    - Eloquent models and relationships for the five tables.
    - JWT bearer login, equivalent to Sanctum, using the Stage 1 token contract.
-   - E00–E04 pass with `--stage 2`, and Stage 1 still passes 73 of 73 after the PHP 8.4 upgrade.
+   - E00–E04 pass with `--stage 2`, and Stage 1 still passes 73 of 73.
 2. **When (Plan):** Nov 25, 2026
-3. **When (Actual):** TBD
-4. **Comment:** Keeping the Stage 1 JWT contract lets all 73 tests apply unchanged; Sanctum tokens would fail two of them.
+3. **When (Actual):** Nov 25, 2026
+4. **Comment:** Keeping the Stage 1 JWT contract lets all 73 tests apply unchanged; Sanctum tokens would fail two of them. 28 of 28 E00–E04 tests pass against the Laravel app started by run.sh (commit dbf6b18); results in code/results/stage2-milestone1-2026-11-25.txt. A Laravel default that redirects rejected requests to a login page caused 500s on token rejection; fixed in bootstrap/app.php.
 
 ---
 
