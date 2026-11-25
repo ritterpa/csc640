@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ExceptionController;
+use App\Http\Controllers\LogController;
+use App\Http\Controllers\MetricController;
 use App\Http\Controllers\RunController;
 use App\Http\Controllers\ScriptController;
 use Illuminate\Support\Facades\Route;
@@ -17,8 +20,10 @@ Route::prefix('v1')->group(function () {
         Route::get('scripts/{scriptId}', [ScriptController::class, 'show']);
         Route::get('runs', [RunController::class, 'index']);
         Route::get('runs/{runId}', [RunController::class, 'show']);
+        Route::get('runs/{runId}/logs', [LogController::class, 'index']);
+        Route::get('runs/{runId}/exceptions', [ExceptionController::class, 'index']);
+        Route::get('runs/{runId}/metrics', [MetricController::class, 'index']);
     });
 
-    // Milestone 2 adds the remaining endpoints, with write routes under
-    // ->middleware(['auth:jwt', 'scope:write']).
+    // Commit 2 adds the write endpoints; commit 3 adds the reports.
 });
