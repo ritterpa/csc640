@@ -18,6 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // added: ->middleware('scope:read') / ('scope:write') on routes
         $middleware->alias(['scope' => RequireScope::class]);
+        
+        // added: an API has no login page. Laravel's default sends rejected requests
+        // to route('login'), which doesn't exist here and caused a 500. With no
+        // redirect, a missing or invalid token becomes a 401 from ApiError.
+        $middleware->redirectGuestsTo(null);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // from Laravel's skeleton: errors under /api are rendered as JSON
