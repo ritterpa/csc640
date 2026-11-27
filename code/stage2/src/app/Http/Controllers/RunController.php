@@ -120,18 +120,12 @@ class RunController extends Controller
 
         $run = Run::find($id) ?? throw ApiException::notFound("Run $id was not found.");
 
-        $start = DateTimeImmutable::createFromInterface($run->StartTimeUtc);
-        if ($end < $start) {
+        // An end before the start is bad input (400); the model computes the duration.
+        if ($end < $run->StartTimeUtc) {
             throw ApiException::badRequest('endTimeUtc must not be before the run start time.');
         }
 
-        // The server computes the duration in milliseconds ("Uv" = seconds and milliseconds).
-        $run->update([
-            'EndTimeUtc' => DateInput::db($end),
-            'Status'     => $input['status'],
-            'DurationMS' => (int) $end->format('Uv') - (int) $start->format('Uv'),
-            'Message'    => $input['message'] ?? null,
-        ]);
+        $run->finish($end, $input['status'], $input['message'] ?? null);
 
         return response()->json(['data' => (new RunResource($run->refresh()))->resolve($request)]);
     }

@@ -297,7 +297,9 @@ Record every run here and keep the matching output file in `results/`.
 | Date | Stage | Command | Expected | Actual | Output file / notes |
 |---|---|---|---|---|---|
 | 11/17/26| Stage 1 | `./code/tests/acceptance.sh` | 73 passed, 0 failed, exit 0 | 73 passed, 0 failed, exit 0 | code/results/stage1-2026-11-17.txt |
-| | Stage 2 | `./code/tests/acceptance.sh --stage 2` | 73 passed, 0 failed, exit 0 | | |
+| 11/25/26 | Stage 2 | `./code/tests/acceptance.sh --stage 2` | Milestone 1: all 28 E00–E04 tests pass | 28 of 28 E00–E04 pass; 32 passed, 41 failed overall, exit 1 (E05–E12 not built yet) | code/results/stage2-milestone1-2026-11-25.txt (commit dbf6b18) |
+| 11/27/26 | Stage 2 | `./code/tests/acceptance.sh --stage 2` | 73 passed, 0 failed, exit 0 | 73 passed, 0 failed, exit 0 | code/results/stage2-milestone2-2026-11-27.txt (Milestone 2, commit 761a26e) |
+| 11/27/26 | Stage 2 | `./code/tests/acceptance.sh --stage 2` | 73 passed, 0 failed, exit 0 | 73 passed, 0 failed, exit 0 | code/results/stage2-2026-11-27.txt (`Run::finish()` refactor, run before commit) |
 
 ---
 

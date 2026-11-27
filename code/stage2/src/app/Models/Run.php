@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\DateInput;
+use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -28,6 +30,25 @@ class Run extends Model
         'ProcessID'    => 'integer',
         'ScriptID'     => 'integer',
     ];
+
+    /**
+     * Records the end of the run: end time, final status, message, and the
+     * duration, which the server always computes (like Stage 1's stored
+     * procedure usp_InfraLogging_EndScriptRun). The caller checks that $end
+     * is not before the start time.
+     */
+    public function finish(DateTimeImmutable $end, string $status, ?string $message): void
+    {
+        $start = DateTimeImmutable::createFromInterface($this->StartTimeUtc);
+
+        $this->update([
+            'EndTimeUtc' => DateInput::db($end),
+            'Status'     => $status,
+            // Milliseconds: "Uv" is Unix seconds followed by milliseconds.
+            'DurationMS' => (int) $end->format('Uv') - (int) $start->format('Uv'),
+            'Message'    => $message,
+        ]);
+    }
 
     public function script(): BelongsTo
     {
