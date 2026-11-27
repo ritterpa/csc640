@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\StartRun;
 use App\Exceptions\ApiException;
 use App\Http\Resources\RunResource;
 use App\Http\Resources\RunSummaryResource;
 use App\Models\Run;
-use App\Models\Script;
 use App\Support\ApiInput;
 use App\Support\DateInput;
 use App\Support\Format;
@@ -14,8 +14,6 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 /**
  * GET   /api/v1/runs          - run history, newest first, with filters and paging
@@ -66,7 +64,8 @@ class RunController extends Controller
         return response()->json(['data' => (new RunResource($run))->resolve($request)]);
     }
 
-    public function store(Request $request): JsonResponse
+    /** Checks the request, then StartRun (injected by Laravel) records the run. */
+    public function store(Request $request, StartRun $startRun): JsonResponse
     {
         $body = ApiInput::jsonObject($request);
         $input = ApiInput::validate($body, [
@@ -95,49 +94,7 @@ class RunController extends Controller
             throw ApiException::badRequest('parentRunId does not refer to an existing run.');
         }
 
-        // Like Stage 1's stored procedure, register the script if it's new (or
-        // update its details) and record the run in one transaction. lockForUpdate
-        // keeps two simultaneous first runs of a script from both creating it.
-        $run = DB::transaction(function () use ($input, $body, $start, $parentRunId) {
-            $details = array_filter([
-                'Description' => $input['description'] ?? null,
-                'Team'        => $input['team'] ?? null,
-                'Repository'  => $input['repository'] ?? null,
-                'Owner'       => $input['owner'] ?? null,
-            ], fn ($value) => $value !== null);
-
-            $script = Script::where('ScriptName', $input['scriptName'])->lockForUpdate()->first();
-            if ($script === null) {
-                $script = Script::create(['ScriptName' => $input['scriptName']] + $details);
-            } else {
-                $script->fill($details);
-                $script->ModifiedDateUtc = new DateTimeImmutable('now', new DateTimeZone('UTC'));
-                $script->save();
-            }
-
-            return Run::create([
-                'RunID'             => Str::uuid()->toString(),
-                'ScriptID'          => $script->ScriptID,
-                'ScriptName'        => $script->ScriptName,
-                'ScriptVersion'     => $input['scriptVersion'] ?? null,
-                'Description'       => $input['description'] ?? null,
-                'ComputerName'      => $input['computerName'] ?? null,
-                'UserName'          => $input['userName'] ?? null,
-                'StartTimeUtc'      => DateInput::db($start),
-                'Status'            => 'Running',
-                'PowerShellVersion' => $input['powerShellVersion'] ?? null,
-                'PSEdition'         => $input['psEdition'] ?? null,
-                'ProcessID'         => $input['processId'] ?? null,
-                'CorrelationID'     => strtolower($input['correlationId'] ?? Str::uuid()->toString()),
-                'ParentRunID'       => $parentRunId,
-                // Any JSON value, stored as text in the Parameters column.
-                'Parameters'        => isset($body['parameters'])
-                    ? json_encode($body['parameters'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
-                    : null,
-                'GitCommit'         => $input['gitCommit'] ?? null,
-                'ScriptPath'        => $input['scriptPath'] ?? null,
-            ]);
-        });
+        $run = $startRun($input, $start, $parentRunId, $body['parameters'] ?? null);
 
         return response()->json(['data' => [
             'runId'         => $run->RunID,
