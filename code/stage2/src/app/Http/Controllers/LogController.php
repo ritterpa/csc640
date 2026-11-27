@@ -7,13 +7,14 @@ use App\Http\Resources\LogEntryResource;
 use App\Models\Run;
 use App\Support\ApiInput;
 use App\Support\DateInput;
+use DateTimeImmutable;
+use DateTimeZone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
  * GET  /api/v1/runs/{runId}/logs  - log entries for a run, oldest first (filters)
- *
- * (POST /runs/{runId}/logs is added in the next commit.)
+ * POST /api/v1/runs/{runId}/logs  - add a log entry (write scope)
  */
 class LogController extends Controller
 {
@@ -41,5 +42,43 @@ class LogController extends Controller
             ->get();
 
         return response()->json(['data' => LogEntryResource::collection($logs)->resolve($request)]);
+    }
+
+    public function store(Request $request, string $runId): JsonResponse
+    {
+        $id = ApiInput::guid($runId, 'runId');
+        $body = ApiInput::jsonObject($request);
+        $input = ApiInput::validate($body, [
+            'level'        => 'required|string|in:' . implode(',', ApiInput::LOG_LEVELS),
+            'eventName'    => 'nullable|string|max:200',
+            'message'      => 'nullable|string',
+            'category'     => 'nullable|string|max:100',
+            'functionName' => 'nullable|string|max:255',
+            'lineNumber'   => 'nullable|integer',
+            'durationMs'   => 'nullable|integer',
+        ]);
+        $timestamp = isset($body['timestampUtc'])
+            ? DateInput::parse($body['timestampUtc'], 'timestampUtc')[0]
+            : new DateTimeImmutable('now', new DateTimeZone('UTC'));
+
+        $run = Run::find($id) ?? throw ApiException::notFound("Run $id was not found.");
+
+        // Creating through the relationship fills in RunID.
+        $entry = $run->logEntries()->create([
+            'TimestampUtc' => DateInput::db($timestamp),
+            'Level'        => $input['level'],
+            'EventName'    => $input['eventName'] ?? null,
+            'Message'      => $input['message'] ?? null,
+            'Category'     => $input['category'] ?? null,
+            'FunctionName' => $input['functionName'] ?? null,
+            'LineNumber'   => $input['lineNumber'] ?? null,
+            'DurationMS'   => $input['durationMs'] ?? null,
+            // Any JSON value (usually an object), stored as text in the JsonData column.
+            'JsonData'     => isset($body['jsonData'])
+                ? json_encode($body['jsonData'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+                : null,
+        ]);
+
+        return response()->json(['data' => (new LogEntryResource($entry))->resolve($request)], 201);
     }
 }

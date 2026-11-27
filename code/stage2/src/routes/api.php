@@ -25,5 +25,12 @@ Route::prefix('v1')->group(function () {
         Route::get('runs/{runId}/metrics', [MetricController::class, 'index']);
     });
 
-    // Commit 2 adds the write endpoints; commit 3 adds the reports.
+    // Write endpoints: a valid bearer token with the write scope (403 for a read-only token).
+    Route::middleware(['auth:jwt', 'scope:write'])->group(function () {
+        Route::post('runs', [RunController::class, 'store']);
+        Route::patch('runs/{runId}', [RunController::class, 'update']);
+        Route::post('runs/{runId}/logs', [LogController::class, 'store']);
+    });
+
+    // Commit 3 adds the reports.
 });
