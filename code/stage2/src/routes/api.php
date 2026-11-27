@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ExceptionController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\MetricController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RunController;
 use App\Http\Controllers\ScriptController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,8 @@ Route::prefix('v1')->group(function () {
         Route::get('runs/{runId}/logs', [LogController::class, 'index']);
         Route::get('runs/{runId}/exceptions', [ExceptionController::class, 'index']);
         Route::get('runs/{runId}/metrics', [MetricController::class, 'index']);
+        Route::get('reports/execution-summary', [ReportController::class, 'executionSummary']);
+        Route::get('reports/failing-scripts', [ReportController::class, 'failingScripts']);
     });
 
     // Write endpoints: a valid bearer token with the write scope (403 for a read-only token).
@@ -31,6 +34,4 @@ Route::prefix('v1')->group(function () {
         Route::patch('runs/{runId}', [RunController::class, 'update']);
         Route::post('runs/{runId}/logs', [LogController::class, 'store']);
     });
-
-    // Commit 3 adds the reports.
 });

@@ -11,13 +11,19 @@ use DateTimeZone;
  */
 final class Format
 {
-    /** 2026-11-01 08:00:00.000 -> "2026-11-01T08:00:00.000Z" */
-    public static function timestamp(?DateTimeInterface $value): ?string
+    /**
+     * 2026-11-01 08:00:00.000 -> "2026-11-01T08:00:00.000Z". Accepts a date
+     * object (from a model's cast) or a database string (from an aggregate
+     * such as withMax, which Eloquent doesn't cast).
+     */
+    public static function timestamp(DateTimeInterface|string|null $value): ?string
     {
         if ($value === null) {
             return null;
         }
-        $utc = \DateTimeImmutable::createFromInterface($value)->setTimezone(new DateTimeZone('UTC'));
+        $utc = is_string($value)
+            ? new \DateTimeImmutable($value, new DateTimeZone('UTC'))
+            : \DateTimeImmutable::createFromInterface($value)->setTimezone(new DateTimeZone('UTC'));
         return $utc->format('Y-m-d\TH:i:s.v\Z');
     }
 
