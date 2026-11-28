@@ -157,6 +157,8 @@ Stage 2 will use ASE 230 [module 2](https://github.com/nkuase/ase230/tree/main/m
 
 ## AI Assistance
 
+### Stage 1
+
 I used Claude (Anthropic) for the following:
 
 - Converting the original SQL Server deployment script to MySQL.
@@ -171,4 +173,32 @@ I used Claude (Anthropic) for the following:
 - Drafting `stage1_evaluation.md`.
 - Reviewing homework submissions against the course requirements.
 
-I reviewed and edited all AI-generated material and am responsible for it, and I can explain how the code and tests work. Further AI assistance will be listed here as the project continues.
+### Stage 2: an agentic engineering approach
+
+For Stage 2 I used an agentic engineering approach with Claude Code. Instead of pasting code in and out of a chat, Claude Code works as an agent inside the repository: it reads the code, makes changes, runs the acceptance tests itself, and reports the results. My role is to set the direction, review each change, and decide what gets committed. In practice this means:
+
+- **Written instructions for the agent.** `CLAUDE.md` describes the project, the Windows/WSL environment, the commands, the Stage 2 architecture, and the rules the agent must follow (for example, never commit from the WSL side, and confirm with me before deleting anything).
+- **The agent tests its own work.** The Docker Compose stack lets the agent run all 74 acceptance tests against both stages with one allowlisted command (`code/docker/test.sh`), without `sudo`. For refactors, it also compared the API's exact responses before and after each change to confirm that nothing changed.
+- **I stay in control of commits.** `.claude/settings.json` makes `git commit` and `git push` ask for my approval every time. The agent shows me the diff and the test results, and I approve or redirect it.
+- **One small, verified step at a time.** Each change is planned first, then made as its own commit, followed by a separate commit with the saved test results in `code/results/` and a row in the Results table in `plan/acceptance.md`.
+
+Claude Code did the following in Stage 2:
+
+- Writing `CLAUDE.md` and the project's `.claude/settings.json` (the test allowlist and the commit/push approvals).
+- Building the Docker Compose stack: `docker-compose.yml`, the Stage 1 and Stage 2 images, the database setup (`code/docker/db-init/`), `code/docker/setup.sh` and `code/docker/test.sh`, and `.gitattributes`.
+- Analyzing Stage 2 against the SOLID principles and refactoring the violations I chose to fix:
+  - the `StartRun` action, which moves the "start a run" rule out of `RunController`;
+  - `Run::finish()` for the run duration;
+  - Resources for the responses that controllers had built by hand;
+  - the `RunStatus` and `LogLevel` enums;
+  - `Format::jsonText()` for JSON encoding;
+  - the per-status run counts built from `RunStatus` (`withRunCounts`);
+  - the `FiltersByDateRange` query scope for the from/to filters;
+  - removing the `ApiError`/`ApiException` dependency cycle;
+  - reading the clock through `CarbonImmutable::now()`;
+  - injecting `JwtTokens` and the password hasher into `AuthController`.
+- A second SOLID review, and the two fixes I chose from it: `ExecutionSummary` (the report's calculations, moved out of `ReportController`) and the `DateRange` value object.
+- Finding and fixing a bug in both stages, where an empty JSON object `{}` was stored and returned as `[]`, and adding acceptance test E08-S2 for it (73 → 74 tests).
+- Drafting the SOLID review in `plan/stage2_evaluation.md`.
+
+I reviewed all AI-generated material and am responsible for it, and I can explain how the code and tests work.
