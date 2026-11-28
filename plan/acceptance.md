@@ -302,6 +302,7 @@ Record every run here and keep the matching output file in `results/`.
 | 11/27/26 | Stage 2 | `./code/tests/acceptance.sh --stage 2` | 73 passed, 0 failed, exit 0 | 73 passed, 0 failed, exit 0 | code/results/stage2-2026-11-27.txt (`Run::finish()` refactor, run before commit) |
 | 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 73 passed, 0 failed, exit 0 | 73 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27.txt (Docker Compose stack, commit 0ecf6e4) |
 | 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 73 passed, 0 failed, exit 0 | 73 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27-200207.txt (responses moved into Resources, SOLID #3, commit b1ea76f) |
+| 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 73 passed, 0 failed, exit 0 | 73 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27-201352.txt (statuses and log levels moved into enums, SOLID #4, commit 02da3e2) |
 
 ---
 
