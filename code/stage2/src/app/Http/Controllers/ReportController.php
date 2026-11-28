@@ -36,22 +36,22 @@ class ReportController extends Controller
             ->when(isset($filters['team']), fn ($b) => $b->whereHas('script', fn ($s) => $s->where('Team', $filters['team'])))
             ->tap(fn ($b) => self::startedWithin($b, $range));
 
-        $count = fn (RunStatus $status) => (clone $runs)->where('Status', $status)->count();
-        $success = $count(RunStatus::Success);
-        $failed = $count(RunStatus::Failed);
-        $cancelled = $count(RunStatus::Cancelled);
-        $finished = $success + $failed + $cancelled;
+        // One count per status: $counts by API field (successfulExecutions, ...)
+        // for the response, $byStatus by status value for the success rate.
+        $counts = $byStatus = [];
+        foreach (RunStatus::cases() as $status) {
+            $n = (clone $runs)->where('Status', $status)->count();
+            $counts[$status->countField()] = $n;
+            $byStatus[$status->value] = $n;
+        }
+        $success = $byStatus[RunStatus::Success->value];
+        $finished = array_sum(array_map(fn (RunStatus $status) => $byStatus[$status->value], RunStatus::finals()));
         // Average over finished runs only (a running run has no duration yet).
         $average = (clone $runs)->whereIn('Status', RunStatus::finals())->avg('DurationMS');
 
-        return response()->json(['data' => [
-            'totalExecutions'      => (clone $runs)->count(),
-            'successfulExecutions' => $success,
-            'failedExecutions'     => $failed,
-            'cancelledExecutions'  => $cancelled,
-            'runningExecutions'    => $count(RunStatus::Running),
+        return response()->json(['data' => ['totalExecutions' => (clone $runs)->count()] + $counts + [
             'averageDurationMs'    => $average === null ? null : (int) round((float) $average),
-            // successful / (successful + failed + cancelled); null when nothing has finished.
+            // successful / all finished runs; null when nothing has finished.
             'successRate'          => $finished === 0 ? null : round($success / $finished, 4),
         ]]);
     }

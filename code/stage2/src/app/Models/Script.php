@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\RunStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -21,6 +23,20 @@ class Script extends Model
         'CreatedDateUtc'  => 'datetime',
         'ModifiedDateUtc' => 'datetime',
     ];
+
+    /**
+     * Adds run counts to the query, in the same SQL query: totalExecutions,
+     * and one count per status named by RunStatus::countField(), such as
+     * successfulExecutions. Script::query()->withRunCounts()->find($id)
+     */
+    public function scopeWithRunCounts(Builder $query): void
+    {
+        $counts = ['runs as totalExecutions'];
+        foreach (RunStatus::cases() as $status) {
+            $counts["runs as {$status->countField()}"] = fn (Builder $runs) => $runs->where('Status', $status);
+        }
+        $query->withCount($counts);
+    }
 
     public function runs(): HasMany
     {
