@@ -61,7 +61,7 @@ final class LogController extends Controller
         $functionName = Validator::optionalString($b, 'functionName', 255);
         $lineNumber   = Validator::optionalInt($b, 'lineNumber');
         $durationMs   = Validator::optionalInt($b, 'durationMs');
-        $jsonData     = Validator::optionalJson($b, 'jsonData');
+        $jsonData     = Validator::optionalJson($request->jsonValue('jsonData'));
 
         $this->requireRun($runId);
         $this->call('usp_InfraLogging_WriteLog', [

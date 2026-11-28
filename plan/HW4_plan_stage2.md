@@ -16,7 +16,7 @@ style: |
 
 1. **When (Plan):** Dec 10, 2026
 2. **When (Actual):** TBD
-3. **Comment:** Stage 2 rebuilds the same 13 endpoints in Laravel and must pass the same 73 acceptance tests as Stage 1, both through `run.sh` and in Docker through `setup.sh`.
+3. **Comment:** Stage 2 rebuilds the same 13 endpoints in Laravel and must pass the same 74 acceptance tests as Stage 1, both through `run.sh` and in Docker through `setup.sh`.
 
 ---
 
@@ -49,7 +49,7 @@ style: |
 1. **What:** Docker environment:
    - A Dockerfile and `docker-compose.yml` run the Laravel app with MySQL.
    - `setup.sh` builds and starts everything.
-   - All 73 tests pass against the container.
+   - All 74 tests pass against the container.
 2. **When (Plan):** Dec 5, 2026
 3. **When (Actual):** TBD
 4. **Comment:** Uses ASE 230 module 3. The test runner gets a target for the container.

@@ -139,16 +139,16 @@ final class Validator
     }
 
     /**
-     * Any JSON value (usually an object) to store in a JSON text column.
-     *
-     * @param array<string,mixed> $source
+     * Any JSON value (usually an object) -> text for a JSON column, or null
+     * when the value is null or missing. Pass the value from
+     * Request::jsonValue(), which keeps objects as objects.
      */
-    public static function optionalJson(array $source, string $key): ?string
+    public static function optionalJson(mixed $value): ?string
     {
-        if (!array_key_exists($key, $source) || $source[$key] === null) {
+        if ($value === null) {
             return null;
         }
-        return json_encode($source[$key], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        return json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     /**

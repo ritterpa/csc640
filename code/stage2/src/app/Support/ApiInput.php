@@ -52,6 +52,19 @@ final class ApiInput
         return $data;
     }
 
+    /**
+     * One free-form JSON field of the request body (parameters, jsonData),
+     * exactly as sent. jsonObject() decodes JSON objects into PHP arrays, for
+     * the validator, and an array cannot tell {} from [] (or {"0":"x"} from
+     * ["x"]). This decodes the body again keeping objects as objects, so the
+     * value is stored as sent. Call it after jsonObject() has checked the body.
+     */
+    public static function jsonValue(Request $request, string $field): mixed
+    {
+        $data = json_decode($request->getContent(), false, 64, JSON_THROW_ON_ERROR);
+        return $data instanceof \stdClass ? ($data->{$field} ?? null) : null;
+    }
+
     public static function guid(mixed $value, string $name): string
     {
         if (! is_string($value) || ! Str::isUuid($value)) {

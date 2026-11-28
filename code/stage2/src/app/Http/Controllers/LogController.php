@@ -77,7 +77,7 @@ class LogController extends Controller
             'LineNumber'   => $input['lineNumber'] ?? null,
             'DurationMS'   => $input['durationMs'] ?? null,
             // Any JSON value (usually an object), stored as text in the JsonData column.
-            'JsonData'     => Format::jsonText($body['jsonData'] ?? null),
+            'JsonData'     => Format::jsonText(ApiInput::jsonValue($request, 'jsonData')),
         ]);
 
         return response()->json(['data' => (new LogEntryResource($entry))->resolve($request)], 201);

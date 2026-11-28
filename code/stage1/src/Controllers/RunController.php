@@ -89,7 +89,7 @@ final class RunController extends Controller
             'powerShellVersion' => Validator::optionalString($b, 'powerShellVersion', 50),
             'psEdition'         => Validator::optionalString($b, 'psEdition', 50),
             'processId'         => Validator::optionalInt($b, 'processId'),
-            'parameters'        => Validator::optionalJson($b, 'parameters'),
+            'parameters'        => Validator::optionalJson($request->jsonValue('parameters')),
             'gitCommit'         => Validator::optionalString($b, 'gitCommit', 100),
             'scriptPath'        => Validator::optionalString($b, 'scriptPath', 1000),
         ];

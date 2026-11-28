@@ -213,6 +213,7 @@ These passwords exist only in the test seed. Never reuse them on a real server.
 | ID | Case | Request | Token | Status | Content check |
 |---|---|---|---|---:|---|
 | E08-S1 | Success: add a log entry | `POST /api/v1/runs/R1/logs`, body: `timestampUtc`, `level` `Information`, `eventName` `Verify`, `message`, `jsonData` object | WRITE | 201 | `logId` > 0; `runId` = R1; `level` = `Information` |
+| E08-S2 | Success: JSON kept as sent | `POST /api/v1/runs/R1/logs`, `jsonData` `{"empty":{},"nested":{"a":{}},"keys":{"0":"x","1":"y"},"list":[]}` | WRITE | 201 | `jsonData` returned exactly as sent: empty objects stay `{}` (not `[]`), and `keys` stays an object |
 | E08-F1 | Failure: invalid level | same, `level` `Loud` | WRITE | 400 | `BAD_REQUEST` |
 | E08-F2 | Failure: unknown run | `POST /api/v1/runs/RX/logs` (valid body) | WRITE | 404 | `NOT_FOUND` |
 
@@ -268,13 +269,13 @@ Every endpoint except the login endpoint is protected. The success cases in Sect
 | E11 `GET /reports/execution-summary` | 401 | 401 | |
 | E12 `GET /reports/failing-scripts` | 401 | 401 | |
 
-**Total: 73 tests** (45 endpoint tests and 28 token tests).
+**Total: 74 tests** (46 endpoint tests and 28 token tests).
 
 ---
 
 ## 5. How to Run
 
-Both stages run the same 73 tests with one command each. The `--stage` option selects the stage's settings (API address, `.env` file, and database command), which are listed at the top of the runner:
+Both stages run the same 74 tests with one command each. The `--stage` option selects the stage's settings (API address, `.env` file, and database command), which are listed at the top of the runner:
 
 ```bash
 # Stage 1 (raw PHP + MySQL behind NGINX); --stage 1 is the default
@@ -286,7 +287,7 @@ Both stages run the same 73 tests with one command each. The `--stage` option se
 
 The first lines of the output name the stage, the API address, and the code version tested (for example `stage1`), so every saved results file identifies what it tested. The Stage 2 settings are placeholders until Stage 2 is built in Part 3. `BASE`, `MYSQL`, and `JWT_SECRET` can still override any setting for a single run.
 
-The exit code is 0 only when all 73 tests pass. If any test fails, the exit code is 1. If a setup problem stops the run (for example MySQL not running or the API unreachable), it exits with code 2 and says why.
+The exit code is 0 only when all 74 tests pass. If any test fails, the exit code is 1. If a setup problem stops the run (for example MySQL not running or the API unreachable), it exits with code 2 and says why.
 
 ---
 

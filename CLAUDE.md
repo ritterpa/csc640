@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-CSC 640 course project: a REST API (JSON, JWT bearer tokens) over an existing MySQL database of PowerShell script logs (`InfrastructureLogging`: script catalog, runs, log entries, exceptions, metrics). The same 13 endpoints under `/api/v1` are built twice, and both builds must pass the **same 73 acceptance tests unchanged**:
+CSC 640 course project: a REST API (JSON, JWT bearer tokens) over an existing MySQL database of PowerShell script logs (`InfrastructureLogging`: script catalog, runs, log entries, exceptions, metrics). The same 13 endpoints under `/api/v1` are built twice, and both builds must pass the **same 74 acceptance tests unchanged**:
 
 - **Stage 1** (`code/stage1`, complete, tag `stage1`): raw PHP + PDO behind NGINX/php-fpm, port 8180. Also serves the HTML/JS front end (`public/index.html`, `public/assets/`).
 - **Stage 2** (`code/stage2`, in progress): Laravel 13 + Eloquent, run with `php artisan serve` on port 8181. The milestones and dates are in `plan/HW4_plan_stage2.md` (next up: Docker, then a Hugo docs site published by `.github/workflows/hugo.yml`).
@@ -21,7 +21,7 @@ The full API contract (fields, status codes, error format) is `plan/acceptance.m
      ```bash
      MSYS_NO_PATHCONV=1 wsl -d stage2 --cd /mnt/c/Users/paul/Documents/GitHub/csc640 -e ./code/docker/test.sh
      ```
-     `MSYS_NO_PATHCONV=1` stops Git Bash from rewriting the `/mnt/c/...` path (PowerShell doesn't need it). It tests both stages; add `--stage 1` or `--stage 2` for one. Add `--save` to also write `code/results/stage<N>-docker-<date>.txt` per stage (or `…-<date>-<HHMMSS>.txt` if a run from that day is already saved; it never overwrites). Expect 73 passed, 0 failed for each stage (exit 0).
+     `MSYS_NO_PATHCONV=1` stops Git Bash from rewriting the `/mnt/c/...` path (PowerShell doesn't need it). It tests both stages; add `--stage 1` or `--stage 2` for one. Add `--save` to also write `code/results/stage<N>-docker-<date>.txt` per stage (or `…-<date>-<HHMMSS>.txt` if a run from that day is already saved; it never overwrites). Expect 74 passed, 0 failed for each stage (exit 0).
   3. Show the user the diff and the test result, and **ask before committing**. `git commit` and `git push` are set to "ask" in `.claude/settings.json`; commit from the Windows checkout only.
 - **The old WSL clone** (`~/projects/csc640` in `stage2`, a separate git clone of the same GitHub repo) is only for checking the non-Docker `run.sh` path. Never commit or push from it; update it with `git pull`. It needs `sudo`, so the user runs it. If files were copied into it for testing, `git pull` refuses until they are discarded: `git restore .`, then `git clean -n` (check the list), `git clean -f`, `git pull`. Never use `git clean -x`, which would delete the generated `code/stage2/api/` and its `.env`.
 - The Docker stack and the non-Docker setup use the same ports (3306 for MySQL, 8180 for Stage 1, 8181 for Stage 2), so only one can run at a time. Stop the stack with `docker compose down`. The local services (`mysql`, `nginx`, `php8.5-fpm`) start at boot in `stage2`; if they hold the ports, the user stops them with `sudo systemctl stop nginx php8.5-fpm mysql` (and Ctrl+C on `run.sh`).
@@ -34,7 +34,7 @@ All run from the repo root in the `stage2` WSL instance.
 ```bash
 # Both stages in Docker (the normal way; no sudo). Stage 1 on :8180, Stage 2 on :8181
 ./code/docker/setup.sh                      # creates/completes .env (secrets), builds, starts, waits until healthy
-./code/docker/test.sh [--stage 1|2] [--save]  # setup + restart Stage 2 with current src/ + 73 acceptance tests per stage
+./code/docker/test.sh [--stage 1|2] [--save]  # setup + restart Stage 2 with current src/ + 74 acceptance tests per stage
 docker compose logs app                     # Stage 2 output; Laravel's log: docker compose exec app tail storage/logs/laravel.log
 docker compose logs stage1                  # Stage 1 output (PHP built-in server)
 docker compose down                         # stop (the database is in memory, so it starts empty next time)

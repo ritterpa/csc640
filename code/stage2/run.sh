@@ -26,7 +26,7 @@
 # What changed, and why:
 #   - Authentication: run1-5.sh runs "php artisan install:api" (Sanctum).
 #     This project keeps Stage 1's HS256 JWT bearer tokens instead, using
-#     firebase/php-jwt, so the same 73 acceptance tests apply to both stages.
+#     firebase/php-jwt, so the same 74 acceptance tests apply to both stages.
 #   - Database: run1-5.sh creates its own tables with migrations and seeders.
 #     This project uses the existing InfrastructureLogging schema (deployed by
 #     setup-database.sh), so no migrations run, and the acceptance tests load

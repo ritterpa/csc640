@@ -5,7 +5,7 @@
 #   ./code/tests/acceptance.sh              # Stage 1: raw PHP + MySQL behind NGINX
 #   ./code/tests/acceptance.sh --stage 2    # Stage 2: Laravel
 #
-# Both stages run the same 73 tests. Only the settings in stage_settings()
+# Both stages run the same 74 tests. Only the settings in stage_settings()
 # below differ. Any of these can also be overridden for a single run:
 #   BASE        API address
 #   JWT_SECRET  server's token secret (default: read from the stage's .env)
@@ -288,6 +288,8 @@ t E06-F2 PATCH /api/v1/runs/$R3 "$WRITE" 400 "$E400" '{"status":"Done","endTimeU
 
 # E08-S1: Add log entry: returns 201 with a new logId, attached to R1, with the submitted level; jsonData is accepted as an object.
 t E08-S1 POST /api/v1/runs/$R1/logs "$WRITE" 201 ".data.logId > 0 and .data.runId == \"$R1\" and .data.level == \"Information\"" '{"timestampUtc":"2026-11-01T08:06:00.000Z","level":"Information","eventName":"Verify","message":"Verification passed","jsonData":{"files":1200}}'
+# E08-S2: JSON values are kept as sent: empty objects (top-level and nested) stay {} and are not turned into [], and an object with number-like keys stays an object.
+t E08-S2 POST /api/v1/runs/$R1/logs "$WRITE" 201 '.data.jsonData == {"empty":{},"nested":{"a":{}},"keys":{"0":"x","1":"y"},"list":[]}' '{"timestampUtc":"2026-11-01T08:06:30.000Z","level":"Debug","eventName":"JsonShapes","jsonData":{"empty":{},"nested":{"a":{}},"keys":{"0":"x","1":"y"},"list":[]}}'
 # E08-F1: Input validation: a log level outside Trace..Critical is rejected with 400.
 t E08-F1 POST /api/v1/runs/$R1/logs "$WRITE" 400 "$E400" '{"timestampUtc":"2026-11-01T08:06:00.000Z","level":"Loud","eventName":"Verify"}'
 # E08-F2: Parent run not found: adding a log entry to a nonexistent run returns 404.

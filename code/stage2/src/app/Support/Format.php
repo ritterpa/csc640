@@ -28,10 +28,14 @@ final class Format
         return $utc->format('Y-m-d\TH:i:s.v\Z');
     }
 
-    /** Text from a JSON column -> decoded value (object, array, or scalar), or null */
+    /**
+     * Text from a JSON column -> decoded value (object, array, or scalar), or
+     * null. Objects stay objects (stdClass), so {} and {"0":"x"} are returned
+     * as stored instead of as the arrays [] and ["x"].
+     */
     public static function json(?string $text): mixed
     {
-        return $text === null ? null : json_decode($text, true);
+        return $text === null ? null : json_decode($text);
     }
 
     /**

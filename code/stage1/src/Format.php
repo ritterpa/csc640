@@ -27,10 +27,14 @@ final class Format
         return $value->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.v');
     }
 
-    /** Text from a JSON column -> decoded value (object/array/scalar), or null */
+    /**
+     * Text from a JSON column -> decoded value (object/array/scalar), or null.
+     * Objects stay objects (stdClass), so {} and {"0":"x"} are returned as
+     * stored instead of as the arrays [] and ["x"].
+     */
     public static function json(?string $text): mixed
     {
-        return $text === null ? null : json_decode($text, true);
+        return $text === null ? null : json_decode($text);
     }
 
     public static function intOrNull(mixed $value): ?int

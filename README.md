@@ -17,7 +17,7 @@ The project is built in two stages that pass the same acceptance tests:
 
 ## Project Documents
 
-- [Acceptance tests](plan/acceptance.md): 73 executable tests for all 13 APIs, the seed data, and the test results.
+- [Acceptance tests](plan/acceptance.md): 74 executable tests for all 13 APIs, the seed data, and the test results.
 - [Stage 1 plan](plan/HW4_plan_stage1.md): milestones with planned and actual dates.
 - [Stage 1 tutorial](presentation/stage1-tutorial.md) ([PDF](presentation/stage1-tutorial.pdf)): Marp slides explaining every endpoint's method, path, inputs, outputs, and authentication, with real success and failure examples.
 - [Saved test results](code/results/): output of each acceptance test run, including the milestone re-runs.
@@ -123,7 +123,7 @@ The pages are plain HTML, CSS, and JavaScript in `code/stage1/public` (`index.ht
 
 ## Running the Acceptance Tests
 
-The same 73 tests run against both stages. The runner resets the database to known seed data, logs in as the seeded test users, and exits nonzero if any test fails.
+The same 74 tests run against both stages. The runner resets the database to known seed data, logs in as the seeded test users, and exits nonzero if any test fails.
 
 ```bash
 ./code/tests/acceptance.sh | tee code/results/stage1-$(date +%F).txt              # Stage 1 (default)

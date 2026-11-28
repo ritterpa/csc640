@@ -96,7 +96,7 @@ class RunController extends Controller
             throw ApiException::badRequest('parentRunId does not refer to an existing run.');
         }
 
-        $run = $startRun($input, $start, $parentRunId, $body['parameters'] ?? null);
+        $run = $startRun($input, $start, $parentRunId, ApiInput::jsonValue($request, 'parameters'));
 
         return response()->json(
             ['data' => (new RunStartedResource($run))->resolve($request)],

@@ -71,4 +71,17 @@ final class Request
         }
         return $data;
     }
+
+    /**
+     * One free-form JSON field of the body (parameters, jsonData), exactly as
+     * sent. json() decodes JSON objects into PHP arrays, and an array cannot
+     * tell {} from [] (or {"0":"x"} from ["x"]). This decodes the body again
+     * keeping objects as objects, so the value is stored as sent. Call it
+     * after json() has checked the body.
+     */
+    public function jsonValue(string $key): mixed
+    {
+        $data = json_decode($this->body, false, 64, JSON_THROW_ON_ERROR);
+        return $data instanceof \stdClass ? ($data->{$key} ?? null) : null;
+    }
 }
