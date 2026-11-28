@@ -3,6 +3,7 @@
 namespace App\Models\Concerns;
 
 use App\Support\DateInput;
+use App\Support\DateRange;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -12,19 +13,15 @@ use Illuminate\Database\Eloquent\Builder;
  *   Run::query()->withinDates('StartTimeUtc', DateInput::range($request->query()))
  *   $run->logEntries()->withinDates('TimestampUtc', $range)
  *
- * $range comes from DateInput::range(): a date-only "to" includes that whole
- * day (toExclusive is the next midnight); a timestamp "to" is inclusive.
+ * DateRange decides whether "to" is included (a timestamp) or excluded (the
+ * midnight after a date-only "to").
  */
 trait FiltersByDateRange
 {
-    /**
-     * @param array{from: ?\DateTimeImmutable, toExclusive: ?\DateTimeImmutable, toInclusive: ?\DateTimeImmutable} $range
-     */
-    public function scopeWithinDates(Builder $query, string $column, array $range): void
+    public function scopeWithinDates(Builder $query, string $column, DateRange $range): void
     {
         $query
-            ->when($range['from'], fn ($q, $from) => $q->where($column, '>=', DateInput::db($from)))
-            ->when($range['toExclusive'], fn ($q, $to) => $q->where($column, '<', DateInput::db($to)))
-            ->when($range['toInclusive'], fn ($q, $to) => $q->where($column, '<=', DateInput::db($to)));
+            ->when($range->from, fn ($q, $from) => $q->where($column, '>=', DateInput::db($from)))
+            ->when($range->to, fn ($q, $to) => $q->where($column, $range->toIsExclusive ? '<' : '<=', DateInput::db($to)));
     }
 }

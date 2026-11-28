@@ -40,28 +40,21 @@ final class DateInput
     }
 
     /**
-     * Reads optional from/to query values. A date-only "to" includes that whole day.
+     * Reads the optional ?from= and ?to= query values as a DateRange. Each may
+     * be a date or a timestamp; a date-only "to" includes that whole day.
      *
      * @param array<string,mixed> $query
-     * @return array{from: ?DateTimeImmutable, toExclusive: ?DateTimeImmutable, toInclusive: ?DateTimeImmutable}
      */
-    public static function range(array $query): array
+    public static function range(array $query): DateRange
     {
         $from = isset($query['from']) ? self::parse($query['from'], 'from', true)[0] : null;
-        $toExclusive = $toInclusive = null;
-        if (isset($query['to'])) {
-            [$to, $dateOnly] = self::parse($query['to'], 'to', true);
-            if ($dateOnly) {
-                $toExclusive = $to->modify('+1 day');
-            } else {
-                $toInclusive = $to;
-            }
-        }
-        if ($from !== null && (($toExclusive !== null && $from >= $toExclusive)
-                || ($toInclusive !== null && $from > $toInclusive))) {
+        [$to, $toIsDateOnly] = isset($query['to']) ? self::parse($query['to'], 'to', true) : [null, false];
+
+        $range = DateRange::between($from, $to, $toIsDateOnly);
+        if ($range->startsAfterEnd()) {
             throw ApiException::badRequest('from must not be after to.');
         }
-        return ['from' => $from, 'toExclusive' => $toExclusive, 'toInclusive' => $toInclusive];
+        return $range;
     }
 
     /** Value for a DATETIME(3) column. */
