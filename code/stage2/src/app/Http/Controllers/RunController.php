@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\StartRun;
+use App\Enums\RunStatus;
 use App\Exceptions\ApiException;
 use App\Http\Resources\RunResource;
 use App\Http\Resources\RunStartedResource;
@@ -14,6 +15,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /**
  * GET   /api/v1/runs          - run history, newest first, with filters and paging
@@ -28,7 +30,7 @@ class RunController extends Controller
         $q = $request->query();
         $filters = ApiInput::validate($q, [
             'scriptId' => 'sometimes|integer|min:1|max:' . ApiInput::INT_MAX,
-            'status'   => 'sometimes|string|in:' . implode(',', ApiInput::RUN_STATUSES),
+            'status'   => ['sometimes', 'string', Rule::enum(RunStatus::class)],
         ]);
         $range = DateInput::range($q);
         $paging = ApiInput::paging($q);
@@ -108,7 +110,8 @@ class RunController extends Controller
         $id = ApiInput::guid($runId, 'runId');
         $body = ApiInput::jsonObject($request);
         $input = ApiInput::validate($body, [
-            'status'  => 'required|string|in:' . implode(',', ApiInput::FINAL_STATUSES),
+            // Only a final status: a run cannot be set back to Running.
+            'status'  => ['required', 'string', Rule::enum(RunStatus::class)->except(RunStatus::Running)],
             'message' => 'nullable|string',
         ]);
         $end = isset($body['endTimeUtc'])

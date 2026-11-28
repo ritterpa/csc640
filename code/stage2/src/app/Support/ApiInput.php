@@ -14,9 +14,7 @@ use Illuminate\Support\Str;
  */
 final class ApiInput
 {
-    public const RUN_STATUSES = ['Running', 'Success', 'Failed', 'Cancelled'];
-    public const FINAL_STATUSES = ['Success', 'Failed', 'Cancelled'];
-    public const LOG_LEVELS = ['Trace', 'Debug', 'Information', 'Warning', 'Error', 'Critical'];
+    /** The largest value of a MySQL INT column: the upper limit for ids and page numbers. */
     public const INT_MAX = 2147483647;
 
     /**

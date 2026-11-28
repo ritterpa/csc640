@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\RunStatus;
 use App\Exceptions\ApiException;
 use App\Http\Resources\ScriptDetailResource;
 use App\Http\Resources\ScriptResource;
@@ -31,10 +32,10 @@ class ScriptController extends Controller
         // with('latestRun') loads the most recent run. ScriptDetailResource formats both.
         $script = Script::query()->withCount([
             'runs as totalExecutions',
-            'runs as successfulExecutions' => fn (Builder $q) => $q->where('Status', 'Success'),
-            'runs as failedExecutions'     => fn (Builder $q) => $q->where('Status', 'Failed'),
-            'runs as cancelledExecutions'  => fn (Builder $q) => $q->where('Status', 'Cancelled'),
-            'runs as runningExecutions'    => fn (Builder $q) => $q->where('Status', 'Running'),
+            'runs as successfulExecutions' => fn (Builder $q) => $q->where('Status', RunStatus::Success),
+            'runs as failedExecutions'     => fn (Builder $q) => $q->where('Status', RunStatus::Failed),
+            'runs as cancelledExecutions'  => fn (Builder $q) => $q->where('Status', RunStatus::Cancelled),
+            'runs as runningExecutions'    => fn (Builder $q) => $q->where('Status', RunStatus::Running),
         ])->with('latestRun')->find($id);
 
         if ($script === null) {

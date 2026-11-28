@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\RunStatus;
 use App\Http\Resources\FailingScriptResource;
 use App\Models\Run;
 use App\Models\Script;
@@ -35,20 +36,20 @@ class ReportController extends Controller
             ->when(isset($filters['team']), fn ($b) => $b->whereHas('script', fn ($s) => $s->where('Team', $filters['team'])))
             ->tap(fn ($b) => self::startedWithin($b, $range));
 
-        $count = fn (string $status) => (clone $runs)->where('Status', $status)->count();
-        $success = $count('Success');
-        $failed = $count('Failed');
-        $cancelled = $count('Cancelled');
+        $count = fn (RunStatus $status) => (clone $runs)->where('Status', $status)->count();
+        $success = $count(RunStatus::Success);
+        $failed = $count(RunStatus::Failed);
+        $cancelled = $count(RunStatus::Cancelled);
         $finished = $success + $failed + $cancelled;
         // Average over finished runs only (a running run has no duration yet).
-        $average = (clone $runs)->whereIn('Status', ApiInput::FINAL_STATUSES)->avg('DurationMS');
+        $average = (clone $runs)->whereIn('Status', RunStatus::finals())->avg('DurationMS');
 
         return response()->json(['data' => [
             'totalExecutions'      => (clone $runs)->count(),
             'successfulExecutions' => $success,
             'failedExecutions'     => $failed,
             'cancelledExecutions'  => $cancelled,
-            'runningExecutions'    => $count('Running'),
+            'runningExecutions'    => $count(RunStatus::Running),
             'averageDurationMs'    => $average === null ? null : (int) round((float) $average),
             // successful / (successful + failed + cancelled); null when nothing has finished.
             'successRate'          => $finished === 0 ? null : round($success / $finished, 4),
@@ -66,7 +67,7 @@ class ReportController extends Controller
 
         // Constraints on each script's runs: within the date range, and also failed.
         $inRange = fn (Builder $runs) => self::startedWithin($runs, $range);
-        $failedInRange = fn (Builder $runs) => self::startedWithin($runs, $range)->where('Status', 'Failed');
+        $failedInRange = fn (Builder $runs) => self::startedWithin($runs, $range)->where('Status', RunStatus::Failed);
 
         $scripts = Script::query()
             ->when(isset($filters['team']), fn ($b) => $b->where('Team', $filters['team']))

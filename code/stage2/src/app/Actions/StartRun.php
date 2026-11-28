@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Enums\RunStatus;
 use App\Models\Run;
 use App\Models\Script;
 use App\Support\DateInput;
@@ -40,7 +41,7 @@ class StartRun
                 'ComputerName'      => $input['computerName'] ?? null,
                 'UserName'          => $input['userName'] ?? null,
                 'StartTimeUtc'      => DateInput::db($start),
-                'Status'            => 'Running',
+                'Status'            => RunStatus::Running->value,
                 'PowerShellVersion' => $input['powerShellVersion'] ?? null,
                 'PSEdition'         => $input['psEdition'] ?? null,
                 'ProcessID'         => $input['processId'] ?? null,

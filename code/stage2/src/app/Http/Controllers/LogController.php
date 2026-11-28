@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\LogLevel;
 use App\Exceptions\ApiException;
 use App\Http\Resources\LogEntryResource;
 use App\Models\Run;
@@ -11,6 +12,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /**
  * GET  /api/v1/runs/{runId}/logs  - log entries for a run, oldest first (filters)
@@ -23,7 +25,7 @@ class LogController extends Controller
         $id = ApiInput::guid($runId, 'runId');
         $q = $request->query();
         $filters = ApiInput::validate($q, [
-            'level'     => 'sometimes|string|in:' . implode(',', ApiInput::LOG_LEVELS),
+            'level'     => ['sometimes', 'string', Rule::enum(LogLevel::class)],
             'eventName' => 'sometimes|string|max:200',
         ]);
         $range = DateInput::range($q);
@@ -49,7 +51,7 @@ class LogController extends Controller
         $id = ApiInput::guid($runId, 'runId');
         $body = ApiInput::jsonObject($request);
         $input = ApiInput::validate($body, [
-            'level'        => 'required|string|in:' . implode(',', ApiInput::LOG_LEVELS),
+            'level'        => ['required', 'string', Rule::enum(LogLevel::class)],
             'eventName'    => 'nullable|string|max:200',
             'message'      => 'nullable|string',
             'category'     => 'nullable|string|max:100',
