@@ -309,6 +309,8 @@ Record every run here and keep the matching output file in `results/`.
 | 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 73 passed, 0 failed, exit 0 | 73 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27-204142.txt (same run, commit 8e62c35) |
 | 11/27/26 | Stage 1 (Docker) | `./code/docker/test.sh --save` | 74 passed, 0 failed, exit 0 | 74 passed, 0 failed, exit 0 | code/results/stage1-docker-2026-11-27-204921.txt ({} kept as sent, new test E08-S2, commit 4f3aefd) |
 | 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 74 passed, 0 failed, exit 0 | 74 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27-204924.txt (same run, commit 4f3aefd) |
+| 11/27/26 | Stage 1 (Docker) | `./code/docker/test.sh --save` | 74 passed, 0 failed, exit 0 | 74 passed, 0 failed, exit 0 | code/results/stage1-docker-2026-11-27-212302.txt (Stage 1 unchanged; run with the next row) |
+| 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 74 passed, 0 failed, exit 0 | 74 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27-212306.txt (per-status counts built from RunStatus, SOLID #6, commit 54792f9) |
 
 ---
 
