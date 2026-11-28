@@ -2,7 +2,6 @@
 
 namespace App\Support;
 
-use App\Exceptions\ApiException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -14,6 +13,10 @@ use Throwable;
  * Turns any error inside /api into the Stage 1 error envelope, so Laravel's
  * default HTML pages and its own JSON formats never reach API clients.
  * Registered in bootstrap/app.php.
+ *
+ * ApiException is not handled here: Laravel calls an exception's own render()
+ * before any render callback, and ApiException::render() uses response()
+ * below. So ApiException depends on this class, and not the other way round.
  */
 final class ApiError
 {
@@ -31,8 +34,6 @@ final class ApiError
     public static function fromThrowable(Throwable $e): JsonResponse
     {
         return match (true) {
-            $e instanceof ApiException => $e->render(),
-
             // Thrown by the auth:jwt middleware: missing, malformed, badly signed, or expired token.
             $e instanceof AuthenticationException => self::response(
                 401, 'UNAUTHORIZED', 'A valid bearer token is required.', ['WWW-Authenticate' => 'Bearer']
