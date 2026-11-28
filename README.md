@@ -184,6 +184,12 @@ For Stage 2 I used an agentic engineering approach with Claude Code. Instead of 
 
 Claude Code did the following in Stage 2:
 
+- Generating the Stage 2 Laravel code in `code/stage2` for Milestones 1–3:
+  - the Eloquent models over the existing schema;
+  - the custom `jwt` guard (`JwtTokens`) and the `RequireScope` middleware;
+  - the controllers and Resources for all 13 endpoints, including the two reports;
+  - the error handling (`ApiException`, `ApiError`), and the input and date helpers (`ApiInput`, `DateInput`, `Format`);
+  - the build and setup script `code/stage2/run.sh`.
 - Writing `CLAUDE.md` and the project's `.claude/settings.json` (the test allowlist and the commit/push approvals).
 - Building the Docker Compose stack: `docker-compose.yml`, the Stage 1 and Stage 2 images, the database setup (`code/docker/db-init/`), `code/docker/setup.sh` and `code/docker/test.sh`, and `.gitattributes`.
 - Analyzing Stage 2 against the SOLID principles and refactoring the violations I chose to fix:
