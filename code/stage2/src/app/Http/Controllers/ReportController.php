@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\RunStatus;
+use App\Http\Resources\ExecutionSummaryResource;
 use App\Http\Resources\FailingScriptResource;
 use App\Models\Run;
 use App\Models\Script;
+use App\Reports\ExecutionSummary;
 use App\Support\ApiInput;
 use App\Support\DateInput;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,24 +38,10 @@ class ReportController extends Controller
             ->when(isset($filters['team']), fn ($b) => $b->whereHas('script', fn ($s) => $s->where('Team', $filters['team'])))
             ->withinDates('StartTimeUtc', $range);
 
-        // One count per status: $counts by API field (successfulExecutions, ...)
-        // for the response, $byStatus by status value for the success rate.
-        $counts = $byStatus = [];
-        foreach (RunStatus::cases() as $status) {
-            $n = (clone $runs)->where('Status', $status)->count();
-            $counts[$status->countField()] = $n;
-            $byStatus[$status->value] = $n;
-        }
-        $success = $byStatus[RunStatus::Success->value];
-        $finished = array_sum(array_map(fn (RunStatus $status) => $byStatus[$status->value], RunStatus::finals()));
-        // Average over finished runs only (a running run has no duration yet).
-        $average = (clone $runs)->whereIn('Status', RunStatus::finals())->avg('DurationMS');
+        // ExecutionSummary computes the numbers; the resource formats them.
+        $summary = ExecutionSummary::of($runs);
 
-        return response()->json(['data' => ['totalExecutions' => (clone $runs)->count()] + $counts + [
-            'averageDurationMs'    => $average === null ? null : (int) round((float) $average),
-            // successful / all finished runs; null when nothing has finished.
-            'successRate'          => $finished === 0 ? null : round($success / $finished, 4),
-        ]]);
+        return response()->json(['data' => (new ExecutionSummaryResource($summary))->resolve($request)]);
     }
 
     public function failingScripts(Request $request): JsonResponse
