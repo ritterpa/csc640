@@ -5,7 +5,7 @@
 # (code/stage2/src) are NOT baked in: they are mounted at /src and copied over
 # the project each time the container starts (entrypoint.sh), so a restart
 # picks up code changes without a rebuild.
-FROM php:8.4-cli
+FROM php:8.5-cli
 
 # pdo_mysql for Eloquent; git and unzip let Composer download packages.
 RUN apt-get update \

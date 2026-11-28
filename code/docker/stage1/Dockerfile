@@ -6,7 +6,7 @@
 # Settings come from environment variables, which Stage 1's Config prefers
 # over a .env file (and the built-in server, unlike "php artisan serve",
 # passes them through).
-FROM php:8.4-cli
+FROM php:8.5-cli
 
 RUN docker-php-ext-install pdo_mysql
 
