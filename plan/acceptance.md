@@ -304,6 +304,8 @@ Record every run here and keep the matching output file in `results/`.
 | 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 73 passed, 0 failed, exit 0 | 73 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27-200207.txt (responses moved into Resources, SOLID #3, commit b1ea76f) |
 | 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 73 passed, 0 failed, exit 0 | 73 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27-201352.txt (statuses and log levels moved into enums, SOLID #4, commit 02da3e2) |
 | 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 73 passed, 0 failed, exit 0 | 73 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27-202017.txt (JSON encoding moved into Format::jsonText, SOLID #5, commit 2e466ad) |
+| 11/27/26 | Stage 1 (Docker) | `./code/docker/test.sh --save` | 73 passed, 0 failed, exit 0 | 73 passed, 0 failed, exit 0 | code/results/stage1-docker-2026-11-27.txt (Stage 1 added to Docker Compose, commit 8e62c35) |
+| 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 73 passed, 0 failed, exit 0 | 73 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27-204142.txt (same run, commit 8e62c35) |
 
 ---
 
