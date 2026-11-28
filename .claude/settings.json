@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wsl -d stage2 --cd /mnt/c/Users/paul/Documents/GitHub/csc640 -e ./code/docker/test.sh)",
+      "Bash(wsl -d stage2 --cd /mnt/c/Users/paul/Documents/GitHub/csc640 -e ./code/docker/test.sh *)",
+      "Bash(MSYS_NO_PATHCONV=1 wsl -d stage2 --cd /mnt/c/Users/paul/Documents/GitHub/csc640 -e ./code/docker/test.sh)",
+      "Bash(MSYS_NO_PATHCONV=1 wsl -d stage2 --cd /mnt/c/Users/paul/Documents/GitHub/csc640 -e ./code/docker/test.sh *)",
+      "PowerShell(wsl -d stage2 --cd /mnt/c/Users/paul/Documents/GitHub/csc640 -e ./code/docker/test.sh)",
+      "PowerShell(wsl -d stage2 --cd /mnt/c/Users/paul/Documents/GitHub/csc640 -e ./code/docker/test.sh *)"
+    ],
+    "ask": [
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "PowerShell(git commit *)",
+      "PowerShell(git push *)"
+    ]
+  }
+}

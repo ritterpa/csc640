@@ -1,0 +1,7 @@
+# Files that run inside Linux (WSL or containers) must keep LF line endings,
+# even in a Windows checkout with core.autocrlf=true: a CRLF shell script
+# fails ("bash\r"), and a CRLF "DELIMITER $$" line breaks the MySQL schema.
+*.sh  text eol=lf
+*.sql text eol=lf
+*.yml text eol=lf
+Dockerfile text eol=lf

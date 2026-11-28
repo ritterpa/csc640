@@ -1,0 +1,69 @@
+# Stage 2 (Laravel) API and its MySQL database in containers.
+#
+# Start:  ./code/docker/setup.sh     (creates .env on first run, builds, starts, waits)
+# Test:   ./code/docker/test.sh      (setup, then the 73 acceptance tests)
+# Stop:   docker compose down
+#
+# Both ports are published on localhost only, the same ports as the
+# non-Docker setup (run.sh and a local MySQL), so stop those first.
+# Secrets come from .env next to this file (git-ignored, made by setup.sh).
+name: infralogging
+
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?run ./code/docker/setup.sh to create .env}
+      APP_DB_USER: infralog_laravel
+      APP_DB_PASSWORD: ${DB_PASSWORD:?run ./code/docker/setup.sh to create .env}
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      # Run in name order on first start: the schema, then the app account.
+      - ./code/database/Deploy-InfraLogging.mysql.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./code/docker/db-init/02-app-user.sh:/docker-entrypoint-initdb.d/02-app-user.sh:ro
+    # Data lives in memory: every "up" of a new container starts from the bare
+    # schema, and the acceptance tests load their own seed data.
+    tmpfs:
+      - /var/lib/mysql
+    healthcheck:
+      # Uses TCP, so it only passes once the real server is up (the
+      # temporary server that runs the init scripts has networking off).
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+
+  app:
+    build: ./code/docker/app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_NAME: InfraLogging
+      APP_ENV: local
+      APP_KEY: ${APP_KEY:?run ./code/docker/setup.sh to create .env}
+      APP_DEBUG: "false"              # 500 responses hide internal details, as in Stage 1
+      APP_URL: http://localhost:8181
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_DATABASE: InfrastructureLogging
+      DB_USERNAME: infralog_laravel
+      DB_PASSWORD: ${DB_PASSWORD}
+      # The API keeps no sessions and needs no cache or queue tables.
+      SESSION_DRIVER: file
+      CACHE_STORE: file
+      QUEUE_CONNECTION: sync
+      JWT_SECRET: ${JWT_SECRET:?run ./code/docker/setup.sh to create .env}
+      JWT_TTL: "3600"
+    ports:
+      - "127.0.0.1:8181:8181"
+    volumes:
+      # The project's own files, copied over the Laravel project at start.
+      - ./code/stage2/src:/src:ro
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1:8181/up') === false ? 1 : 0);"]
+      interval: 3s
+      timeout: 5s
+      retries: 40

@@ -14,31 +14,31 @@ The full API contract (fields, status codes, error format) is `plan/acceptance.m
 ## Environment
 
 - **Development:** VS Code on Windows, in this checkout (`C:\Users\paul\Documents\GitHub\csc640`). PHP is not on the Windows PATH.
-- **Execution:** the WSL instance named **`stage2`**, which is *not* the default WSL distro (`Ubuntu` is). Run commands there with `wsl -d stage2 -e sh -c 'cd ~/projects/csc640 && ...'`; a plain `wsl` lands in the wrong distro.
-- The WSL copy (`/home/paul/projects/csc640`, which Windows sees as `\\wsl.localhost\stage2\home\paul\projects\csc640`) is a **separate git clone** with the same GitHub origin.
-- **Workflow between the two clones:**
-  1. Write or generate code in the Windows checkout.
-  2. Copy the changed files into the WSL copy and test there (`run.sh`, then `acceptance.sh`).
-  3. Once the acceptance tests pass, commit from the **Windows** side. Copy any results file produced in WSL (`code/results/*.txt`) back to Windows first so it goes in the same commit.
-  4. Push. Then, in the WSL copy, discard the copied test files and pull. Otherwise `git pull` refuses, because the copies would be overwritten (even when they're identical to the commit):
+- **Execution:** the WSL instance named **`stage2`**, which is *not* the default WSL distro (`Ubuntu` is); a plain `wsl` lands in the wrong one. `stage2` runs Docker (no `sudo` needed) and has the test tools (bash, curl, jq, openssl, git, MySQL 8.4 client).
+- **Development loop (Docker, Stage 2):**
+  1. Edit in the Windows checkout. Docker Compose runs in `stage2` directly against this checkout through `/mnt/c`, so nothing is copied anywhere.
+  2. Test with this exact command; it is allowlisted in `.claude/settings.json`, so it runs without a prompt:
      ```bash
-     cd ~/projects/csc640
-     git restore .      # undo changes to tracked files
-     git clean -n       # dry run: list the untracked files that would be deleted; check the list
-     git clean -f       # delete them
-     git pull
+     MSYS_NO_PATHCONV=1 wsl -d stage2 --cd /mnt/c/Users/paul/Documents/GitHub/csc640 -e ./code/docker/test.sh
      ```
-     Run `git clean` without `-x`: then it leaves gitignored files alone, including the generated Laravel app `code/stage2/api/` and the `.env` files that hold the database password and JWT secret. Only clean up after the results file has been copied back to Windows (step 3).
-- **Never commit (or push) from the WSL side.** It only receives copied files for testing, and `git pull`.
-- **Confirm with the user before deleting anything from the Windows clone**: files, directories, branches, stashes, or uncommitted changes (including `git restore`, `git clean`, `git reset --hard` and `git checkout -- <file>`). The WSL cleanup above is the only routine deletion, and it applies to the WSL copy only.
-- Setup and test scripts need `sudo` for MySQL root (socket auth), so the user usually has to run them.
+     `MSYS_NO_PATHCONV=1` stops Git Bash from rewriting the `/mnt/c/...` path (PowerShell doesn't need it). Add `--save` to also write `code/results/stage2-docker-<date>.txt`. Expect 73 passed, 0 failed (exit 0).
+  3. Show the user the diff and the test result, and **ask before committing**. `git commit` and `git push` are set to "ask" in `.claude/settings.json`; commit from the Windows checkout only.
+- **The old WSL clone** (`~/projects/csc640` in `stage2`, a separate git clone of the same GitHub repo) is only for checking the non-Docker `run.sh` path. Never commit or push from it; update it with `git pull`. It needs `sudo`, so the user runs it. If files were copied into it for testing, `git pull` refuses until they are discarded: `git restore .`, then `git clean -n` (check the list), `git clean -f`, `git pull`. Never use `git clean -x`, which would delete the generated `code/stage2/api/` and its `.env`.
+- The Docker stack and the non-Docker setup use the same ports (3306 for MySQL, 8181 for the API), so only one can run at a time. Stop the stack with `docker compose down`, and the local ones with `sudo service mysql stop` and Ctrl+C on `run.sh`.
+- **Confirm with the user before deleting anything from the Windows clone**: files, directories, branches, stashes, or uncommitted changes (including `git restore`, `git clean`, `git reset --hard` and `git checkout -- <file>`).
 
 ## Commands
 
 All run from the repo root in the `stage2` WSL instance.
 
 ```bash
-# One-time: MySQL, schema, and the test logins reader/ReaderPass123! and writer/WriterPass123!
+# Stage 2 in Docker (the normal way; no sudo)
+./code/docker/setup.sh                      # first run creates .env (secrets), builds, starts, waits until healthy
+./code/docker/test.sh [--save]              # setup + restart app with current src/ + 73 acceptance tests
+docker compose logs app                     # app output; Laravel's log: docker compose exec app tail storage/logs/laravel.log
+docker compose down                         # stop (the database is in memory, so it starts empty next time)
+
+# Without Docker. One-time: MySQL, schema, and the test logins reader/ReaderPass123! and writer/WriterPass123!
 sudo service mysql start
 sudo ./code/database/setup-database.sh --test-logins
 
@@ -67,6 +67,13 @@ Only the project's own files are committed, in `code/stage2/src/`. `run.sh` crea
 - Edit files in `src/`, never in `api/`. After editing, rerun `run.sh` (or `--setup-only`) to copy the changes in.
 - `src/bootstrap/app.php` and `src/app/Providers/AppServiceProvider.php` **replace** the Laravel skeleton's own copies; keep the skeleton parts they contain.
 - There are no migrations. The schema comes from `code/database/Deploy-InfraLogging.mysql.sql`. Models map onto its PascalCase tables and columns (`Run` → `ScriptRun` with a GUID string key, `Script` → `ScriptCatalog`). Timestamp columns are `DATETIME(3)`, so models use `$dateFormat = 'Y-m-d H:i:s.v'` and `$timestamps = false`.
+
+The Docker stack (`docker-compose.yml`, `code/docker/`) does the same steps as `run.sh`, split across containers:
+- **`db`** runs `mysql:8.4` with its data in memory (tmpfs). On first start it loads the schema file, then `db-init/02-app-user.sh` creates the least-privilege app account.
+- **`app`** is an image with the Laravel skeleton and `vendor/` built in. `code/stage2/src` is mounted read-only, and `app/entrypoint.sh` copies it over the skeleton on every start. That's why `test.sh` recreates the container: a code change needs a restart, not a rebuild. Changing the Dockerfile or entrypoint does need a rebuild, which `setup.sh` handles with `--build`.
+- **Settings:** the entrypoint writes them into the app's `.env` from the Compose environment variables. They can't stay as environment variables only, because `php artisan serve` strips most of them from the server it starts, and Laravel then silently falls back to SQLite.
+- **Secrets** are in the root `.env`, which is git-ignored and created by `setup.sh`. The tests read the MySQL root password and `JWT_SECRET` from it.
+- `.gitattributes` keeps `*.sh`, `*.sql`, `*.yml` and the Dockerfile LF-only (this checkout uses `core.autocrlf=true`). A CRLF script fails inside Linux.
 
 How a request flows:
 - **Auth:** the routes in `routes/api.php` use `auth:jwt`, which is a custom guard registered with `Auth::viaRequest` in `AppServiceProvider` and backed by `Support/JwtTokens`. It is stateless HS256 with the same claims as Stage 1, deliberately not Sanctum, so the token tests pass unchanged. After it, `scope:read`/`scope:write` (`Http/Middleware/RequireScope`) checks the token's scope.
