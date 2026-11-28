@@ -5,6 +5,7 @@
 # Usage (from anywhere in the repository):
 #   ./code/docker/test.sh          # print the results
 #   ./code/docker/test.sh --save   # also save them to code/results/stage2-docker-<date>.txt
+#                                  # (stage2-docker-<date>-<HHMMSS>.txt if that file exists)
 #
 # It runs setup.sh (builds and starts the stack if needed), restarts the app
 # container so it serves the current code/stage2/src, and then runs
@@ -18,7 +19,7 @@ cd "$ROOT"
 SAVE=false
 case "${1:-}" in
   --save)    SAVE=true ;;
-  -h|--help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  -h|--help) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
   "")        ;;
   *)         echo "Unknown option: $1 (use --help)" >&2; exit 2 ;;
 esac
@@ -39,6 +40,8 @@ export JWT_SECRET
 
 if $SAVE; then
   out="code/results/stage2-docker-$(date +%F).txt"
+  # Never overwrite an earlier run from the same day: add the time instead.
+  [ -e "$out" ] && out="code/results/stage2-docker-$(date +%F-%H%M%S).txt"
   set +e      # a failed test run must still report where its output went
   ./code/tests/acceptance.sh --stage 2 | tee "$out"
   status=${PIPESTATUS[0]}

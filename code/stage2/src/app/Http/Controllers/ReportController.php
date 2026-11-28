@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\FailingScriptResource;
 use App\Models\Run;
 use App\Models\Script;
 use App\Support\ApiInput;
 use App\Support\DateInput;
-use App\Support\Format;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -83,16 +83,7 @@ class ReportController extends Controller
             ->limit((int) ($filters['limit'] ?? 10))
             ->get();
 
-        return response()->json(['data' => $scripts->map(fn (Script $s) => [
-            'scriptId'        => (int) $s->ScriptID,
-            'scriptName'      => $s->ScriptName,
-            'team'            => $s->Team,
-            'failureCount'    => (int) $s->failureCount,
-            'totalExecutions' => (int) $s->totalExecutions,
-            'failureRate'     => round($s->failureCount / $s->totalExecutions, 4),
-            // When the latest failure ended, or when it started if it has no end time.
-            'lastFailureUtc'  => Format::timestamp($s->lastFailureEnd ?? $s->lastFailureStart),
-        ])->values()]);
+        return response()->json(['data' => FailingScriptResource::collection($scripts)->resolve($request)]);
     }
 
     /**

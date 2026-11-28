@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Actions\StartRun;
 use App\Exceptions\ApiException;
 use App\Http\Resources\RunResource;
+use App\Http\Resources\RunStartedResource;
 use App\Http\Resources\RunSummaryResource;
 use App\Models\Run;
 use App\Support\ApiInput;
 use App\Support\DateInput;
-use App\Support\Format;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Http\JsonResponse;
@@ -96,14 +96,11 @@ class RunController extends Controller
 
         $run = $startRun($input, $start, $parentRunId, $body['parameters'] ?? null);
 
-        return response()->json(['data' => [
-            'runId'         => $run->RunID,
-            'scriptId'      => (int) $run->ScriptID,
-            'scriptName'    => $run->ScriptName,
-            'startTimeUtc'  => Format::timestamp($run->StartTimeUtc),
-            'status'        => $run->Status,
-            'correlationId' => $run->CorrelationID,
-        ]], 201, ['Location' => "/api/v1/runs/{$run->RunID}"]);
+        return response()->json(
+            ['data' => (new RunStartedResource($run))->resolve($request)],
+            201,
+            ['Location' => "/api/v1/runs/{$run->RunID}"]
+        );
     }
 
     public function update(Request $request, string $runId): JsonResponse
