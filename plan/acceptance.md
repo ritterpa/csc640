@@ -319,6 +319,8 @@ Record every run here and keep the matching output file in `results/`.
 | 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 74 passed, 0 failed, exit 0 | 74 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27-214132.txt (current time read through CarbonImmutable::now(), SOLID #13, commit 65195a6) |
 | 11/27/26 | Stage 1 (Docker) | `./code/docker/test.sh --save` | 74 passed, 0 failed, exit 0 | 74 passed, 0 failed, exit 0 | code/results/stage1-docker-2026-11-27-214419.txt (Stage 1 unchanged; run with the next row) |
 | 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 74 passed, 0 failed, exit 0 | 74 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27-214423.txt (token service and hasher injected into AuthController, SOLID #12, commit e16168c) |
+| 11/27/26 | Stage 1 (Docker) | `./code/docker/test.sh --save` | 74 passed, 0 failed, exit 0 | 74 passed, 0 failed, exit 0 | code/results/stage1-docker-2026-11-27-220348.txt (Stage 1 unchanged; run with the next row) |
+| 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 74 passed, 0 failed, exit 0 | 74 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27-220352.txt (second SOLID review: ExecutionSummary class, commit 4ad8879, and DateRange object, commit c1a5544) |
 
 ---
 
