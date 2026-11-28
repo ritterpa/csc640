@@ -6,8 +6,9 @@ use DateTimeInterface;
 use DateTimeZone;
 
 /**
- * Converts database values to the API's formats, matching Stage 1:
- * timestamps as ISO 8601 UTC with milliseconds, JSON text as JSON values.
+ * Converts between database values and the API's formats, matching Stage 1:
+ * timestamps as ISO 8601 UTC with milliseconds, and JSON values stored as
+ * JSON text (jsonText) and returned as JSON values again (json).
  */
 final class Format
 {
@@ -31,6 +32,16 @@ final class Format
     public static function json(?string $text): mixed
     {
         return $text === null ? null : json_decode($text, true);
+    }
+
+    /**
+     * Any JSON value from a request -> text for a JSON column (Parameters,
+     * JsonData), or null when the value is null or missing. Slashes and
+     * non-ASCII characters are stored as written, not escaped.
+     */
+    public static function jsonText(mixed $value): ?string
+    {
+        return $value === null ? null : json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     public static function intOrNull(mixed $value): ?int

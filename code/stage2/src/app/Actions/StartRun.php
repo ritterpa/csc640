@@ -6,6 +6,7 @@ use App\Enums\RunStatus;
 use App\Models\Run;
 use App\Models\Script;
 use App\Support\DateInput;
+use App\Support\Format;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Support\Facades\DB;
@@ -47,9 +48,7 @@ class StartRun
                 'ProcessID'         => $input['processId'] ?? null,
                 'CorrelationID'     => strtolower($input['correlationId'] ?? Str::uuid()->toString()),
                 'ParentRunID'       => $parentRunId,
-                'Parameters'        => $parameters !== null
-                    ? json_encode($parameters, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
-                    : null,
+                'Parameters'        => Format::jsonText($parameters),
                 'GitCommit'         => $input['gitCommit'] ?? null,
                 'ScriptPath'        => $input['scriptPath'] ?? null,
             ]);

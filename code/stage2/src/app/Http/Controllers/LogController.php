@@ -8,6 +8,7 @@ use App\Http\Resources\LogEntryResource;
 use App\Models\Run;
 use App\Support\ApiInput;
 use App\Support\DateInput;
+use App\Support\Format;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Http\JsonResponse;
@@ -76,9 +77,7 @@ class LogController extends Controller
             'LineNumber'   => $input['lineNumber'] ?? null,
             'DurationMS'   => $input['durationMs'] ?? null,
             // Any JSON value (usually an object), stored as text in the JsonData column.
-            'JsonData'     => isset($body['jsonData'])
-                ? json_encode($body['jsonData'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
-                : null,
+            'JsonData'     => Format::jsonText($body['jsonData'] ?? null),
         ]);
 
         return response()->json(['data' => (new LogEntryResource($entry))->resolve($request)], 201);
