@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\FiltersByDateRange;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class LogEntry extends Model
 {
+    use FiltersByDateRange;     // ->withinDates('TimestampUtc', $range)
+
     protected $table = 'LogEntry';
     protected $primaryKey = 'LogID';
     public $timestamps = false;

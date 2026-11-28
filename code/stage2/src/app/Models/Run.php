@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\FiltersByDateRange;
 use App\Support\DateInput;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Run extends Model
 {
+    use FiltersByDateRange;     // ->withinDates('StartTimeUtc', $range)
+
     protected $table = 'ScriptRun';
     protected $primaryKey = 'RunID';
     public $incrementing = false;

@@ -38,9 +38,7 @@ class RunController extends Controller
         $query = Run::query()
             ->when(isset($filters['scriptId']), fn ($b) => $b->where('ScriptID', (int) $filters['scriptId']))
             ->when(isset($filters['status']), fn ($b) => $b->where('Status', $filters['status']))
-            ->when($range['from'], fn ($b, $from) => $b->where('StartTimeUtc', '>=', DateInput::db($from)))
-            ->when($range['toExclusive'], fn ($b, $to) => $b->where('StartTimeUtc', '<', DateInput::db($to)))
-            ->when($range['toInclusive'], fn ($b, $to) => $b->where('StartTimeUtc', '<=', DateInput::db($to)));
+            ->withinDates('StartTimeUtc', $range);
 
         $total = (clone $query)->count();
         $runs = $query

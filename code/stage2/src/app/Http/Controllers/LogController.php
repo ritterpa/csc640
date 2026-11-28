@@ -37,9 +37,7 @@ class LogController extends Controller
         $logs = $run->logEntries()
             ->when(isset($filters['level']), fn ($b) => $b->where('Level', $filters['level']))
             ->when(isset($filters['eventName']), fn ($b) => $b->where('EventName', $filters['eventName']))
-            ->when($range['from'], fn ($b, $from) => $b->where('TimestampUtc', '>=', DateInput::db($from)))
-            ->when($range['toExclusive'], fn ($b, $to) => $b->where('TimestampUtc', '<', DateInput::db($to)))
-            ->when($range['toInclusive'], fn ($b, $to) => $b->where('TimestampUtc', '<=', DateInput::db($to)))
+            ->withinDates('TimestampUtc', $range)
             ->orderBy('TimestampUtc')
             ->orderBy('LogID')
             ->get();

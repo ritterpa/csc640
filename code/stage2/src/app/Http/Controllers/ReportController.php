@@ -34,7 +34,7 @@ class ReportController extends Controller
             ->when(isset($filters['scriptId']), fn ($b) => $b->where('ScriptID', (int) $filters['scriptId']))
             // whereHas filters runs through the run's script relationship.
             ->when(isset($filters['team']), fn ($b) => $b->whereHas('script', fn ($s) => $s->where('Team', $filters['team'])))
-            ->tap(fn ($b) => self::startedWithin($b, $range));
+            ->withinDates('StartTimeUtc', $range);
 
         // One count per status: $counts by API field (successfulExecutions, ...)
         // for the response, $byStatus by status value for the success rate.
@@ -66,8 +66,8 @@ class ReportController extends Controller
         $range = DateInput::range($q);
 
         // Constraints on each script's runs: within the date range, and also failed.
-        $inRange = fn (Builder $runs) => self::startedWithin($runs, $range);
-        $failedInRange = fn (Builder $runs) => self::startedWithin($runs, $range)->where('Status', RunStatus::Failed);
+        $inRange = fn (Builder $runs) => $runs->withinDates('StartTimeUtc', $range);
+        $failedInRange = fn (Builder $runs) => $runs->withinDates('StartTimeUtc', $range)->where('Status', RunStatus::Failed);
 
         $scripts = Script::query()
             ->when(isset($filters['team']), fn ($b) => $b->where('Team', $filters['team']))
@@ -85,18 +85,5 @@ class ReportController extends Controller
             ->get();
 
         return response()->json(['data' => FailingScriptResource::collection($scripts)->resolve($request)]);
-    }
-
-    /**
-     * Limits runs to those that started within the from/to range.
-     *
-     * @param array{from: ?\DateTimeImmutable, toExclusive: ?\DateTimeImmutable, toInclusive: ?\DateTimeImmutable} $range
-     */
-    private static function startedWithin(Builder $runs, array $range): Builder
-    {
-        return $runs
-            ->when($range['from'], fn ($b, $from) => $b->where('StartTimeUtc', '>=', DateInput::db($from)))
-            ->when($range['toExclusive'], fn ($b, $to) => $b->where('StartTimeUtc', '<', DateInput::db($to)))
-            ->when($range['toInclusive'], fn ($b, $to) => $b->where('StartTimeUtc', '<=', DateInput::db($to)));
     }
 }
