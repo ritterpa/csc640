@@ -15,16 +15,16 @@ The full API contract (fields, status codes, error format) is `plan/acceptance.m
 
 - **Development:** VS Code on Windows, in this checkout (`C:\Users\paul\Documents\GitHub\csc640`). PHP is not on the Windows PATH.
 - **Execution:** the WSL instance named **`stage2`**, which is *not* the default WSL distro (`Ubuntu` is); a plain `wsl` lands in the wrong one. `stage2` runs Docker (no `sudo` needed) and has the test tools (bash, curl, jq, openssl, git, MySQL 8.4 client).
-- **Development loop (Docker, Stage 2):**
+- **Development loop (Docker, both stages):**
   1. Edit in the Windows checkout. Docker Compose runs in `stage2` directly against this checkout through `/mnt/c`, so nothing is copied anywhere.
   2. Test with this exact command; it is allowlisted in `.claude/settings.json`, so it runs without a prompt:
      ```bash
      MSYS_NO_PATHCONV=1 wsl -d stage2 --cd /mnt/c/Users/paul/Documents/GitHub/csc640 -e ./code/docker/test.sh
      ```
-     `MSYS_NO_PATHCONV=1` stops Git Bash from rewriting the `/mnt/c/...` path (PowerShell doesn't need it). Add `--save` to also write `code/results/stage2-docker-<date>.txt` (or `…-<date>-<HHMMSS>.txt` if a run from that day is already saved; it never overwrites). Expect 73 passed, 0 failed (exit 0).
+     `MSYS_NO_PATHCONV=1` stops Git Bash from rewriting the `/mnt/c/...` path (PowerShell doesn't need it). It tests both stages; add `--stage 1` or `--stage 2` for one. Add `--save` to also write `code/results/stage<N>-docker-<date>.txt` per stage (or `…-<date>-<HHMMSS>.txt` if a run from that day is already saved; it never overwrites). Expect 73 passed, 0 failed for each stage (exit 0).
   3. Show the user the diff and the test result, and **ask before committing**. `git commit` and `git push` are set to "ask" in `.claude/settings.json`; commit from the Windows checkout only.
 - **The old WSL clone** (`~/projects/csc640` in `stage2`, a separate git clone of the same GitHub repo) is only for checking the non-Docker `run.sh` path. Never commit or push from it; update it with `git pull`. It needs `sudo`, so the user runs it. If files were copied into it for testing, `git pull` refuses until they are discarded: `git restore .`, then `git clean -n` (check the list), `git clean -f`, `git pull`. Never use `git clean -x`, which would delete the generated `code/stage2/api/` and its `.env`.
-- The Docker stack and the non-Docker setup use the same ports (3306 for MySQL, 8181 for the API), so only one can run at a time. Stop the stack with `docker compose down`, and the local ones with `sudo service mysql stop` and Ctrl+C on `run.sh`.
+- The Docker stack and the non-Docker setup use the same ports (3306 for MySQL, 8180 for Stage 1, 8181 for Stage 2), so only one can run at a time. Stop the stack with `docker compose down`. The local services (`mysql`, `nginx`, `php8.5-fpm`) start at boot in `stage2`; if they hold the ports, the user stops them with `sudo systemctl stop nginx php8.5-fpm mysql` (and Ctrl+C on `run.sh`).
 - **Confirm with the user before deleting anything from the Windows clone**: files, directories, branches, stashes, or uncommitted changes (including `git restore`, `git clean`, `git reset --hard` and `git checkout -- <file>`).
 
 ## Commands
@@ -32,10 +32,11 @@ The full API contract (fields, status codes, error format) is `plan/acceptance.m
 All run from the repo root in the `stage2` WSL instance.
 
 ```bash
-# Stage 2 in Docker (the normal way; no sudo)
-./code/docker/setup.sh                      # first run creates .env (secrets), builds, starts, waits until healthy
-./code/docker/test.sh [--save]              # setup + restart app with current src/ + 73 acceptance tests
-docker compose logs app                     # app output; Laravel's log: docker compose exec app tail storage/logs/laravel.log
+# Both stages in Docker (the normal way; no sudo). Stage 1 on :8180, Stage 2 on :8181
+./code/docker/setup.sh                      # creates/completes .env (secrets), builds, starts, waits until healthy
+./code/docker/test.sh [--stage 1|2] [--save]  # setup + restart Stage 2 with current src/ + 73 acceptance tests per stage
+docker compose logs app                     # Stage 2 output; Laravel's log: docker compose exec app tail storage/logs/laravel.log
+docker compose logs stage1                  # Stage 1 output (PHP built-in server)
 docker compose down                         # stop (the database is in memory, so it starts empty next time)
 
 # Without Docker. One-time: MySQL, schema, and the test logins reader/ReaderPass123! and writer/WriterPass123!
@@ -68,11 +69,12 @@ Only the project's own files are committed, in `code/stage2/src/`. `run.sh` crea
 - `src/bootstrap/app.php` and `src/app/Providers/AppServiceProvider.php` **replace** the Laravel skeleton's own copies; keep the skeleton parts they contain.
 - There are no migrations. The schema comes from `code/database/Deploy-InfraLogging.mysql.sql`. Models map onto its PascalCase tables and columns (`Run` → `ScriptRun` with a GUID string key, `Script` → `ScriptCatalog`). Timestamp columns are `DATETIME(3)`, so models use `$dateFormat = 'Y-m-d H:i:s.v'` and `$timestamps = false`.
 
-The Docker stack (`docker-compose.yml`, `code/docker/`) does the same steps as `run.sh`, split across containers:
-- **`db`** runs `mysql:8.4` with its data in memory (tmpfs). On first start it loads the schema file, then `db-init/02-app-user.sh` creates the least-privilege app account.
+The Docker stack (`docker-compose.yml`, `code/docker/`) runs both stages against one database:
+- **`db`** runs `mysql:8.4` with its data in memory (tmpfs). On first start it loads the schema file, then `db-init/02-app-user.sh` creates each stage's least-privilege account: `infralog_laravel` (SELECT, INSERT, UPDATE) and `infralog_api` (SELECT, EXECUTE; Stage 1 writes through the stored procedures).
+- **`stage1`** is plain PHP with `pdo_mysql`, serving the read-only mounted `code/stage1` with PHP's built-in server (`public/index.php` routes like NGINX's `try_files`). It reads files per request, so Stage 1 code changes need no restart. Its settings are environment variables, which Stage 1's `Config` prefers over a `.env` file.
 - **`app`** is an image with the Laravel skeleton and `vendor/` built in. `code/stage2/src` is mounted read-only, and `app/entrypoint.sh` copies it over the skeleton on every start. That's why `test.sh` recreates the container: a code change needs a restart, not a rebuild. Changing the Dockerfile or entrypoint does need a rebuild, which `setup.sh` handles with `--build`.
 - **Settings:** the entrypoint writes them into the app's `.env` from the Compose environment variables. They can't stay as environment variables only, because `php artisan serve` strips most of them from the server it starts, and Laravel then silently falls back to SQLite.
-- **Secrets** are in the root `.env`, which is git-ignored and created by `setup.sh`. The tests read the MySQL root password and `JWT_SECRET` from it.
+- **Secrets** are in the root `.env`, which is git-ignored; `setup.sh` creates it and adds any missing setting. Both stages share its `JWT_SECRET`, and the tests read the MySQL root password and `JWT_SECRET` from it.
 - `.gitattributes` keeps `*.sh`, `*.sql`, `*.yml` and the Dockerfile LF-only (this checkout uses `core.autocrlf=true`). A CRLF script fails inside Linux.
 
 How a request flows:

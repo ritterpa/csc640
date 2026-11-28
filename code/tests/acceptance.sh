@@ -10,6 +10,7 @@
 #   BASE        API address
 #   JWT_SECRET  server's token secret (default: read from the stage's .env)
 #   MYSQL       command that runs SQL (default: mysql if it can log in, else sudo mysql)
+#   LABEL       what the first output line calls the setup (default: the stage's name)
 # Example: BASE=http://localhost:9000 ./code/tests/acceptance.sh --stage 2
 #
 # Exit codes: 0 = all tests passed, 1 = some tests failed, 2 = setup problem.
@@ -60,7 +61,7 @@ trap 'rm -f "$BODY"' EXIT
 setup_error() { echo "SETUP ERROR: $*" >&2; exit 2; }
 
 # Record what was tested, so a saved results file identifies its stage and code version.
-echo "Acceptance tests: $STAGE_NAME at $BASE"
+echo "Acceptance tests: ${LABEL:-$STAGE_NAME} at $BASE"
 echo "Code version: $(git -C "$DIR" describe --tags --always --dirty 2>/dev/null || echo unknown); run $(date '+%F %T')"
 echo "----"
 
