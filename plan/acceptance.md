@@ -315,6 +315,8 @@ Record every run here and keep the matching output file in `results/`.
 | 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 74 passed, 0 failed, exit 0 | 74 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27-212529.txt (date filter moved into one query scope, SOLID #7, commit 60a868a) |
 | 11/27/26 | Stage 1 (Docker) | `./code/docker/test.sh --save` | 74 passed, 0 failed, exit 0 | 74 passed, 0 failed, exit 0 | code/results/stage1-docker-2026-11-27-213731.txt (Stage 1 unchanged; run with the next row) |
 | 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 74 passed, 0 failed, exit 0 | 74 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27-213735.txt (ApiError/ApiException dependency cycle removed, SOLID #15, commit d224c4e) |
+| 11/27/26 | Stage 1 (Docker) | `./code/docker/test.sh --save` | 74 passed, 0 failed, exit 0 | 74 passed, 0 failed, exit 0 | code/results/stage1-docker-2026-11-27-214128.txt (Stage 1 unchanged; run with the next row) |
+| 11/27/26 | Stage 2 (Docker) | `./code/docker/test.sh --save` | 74 passed, 0 failed, exit 0 | 74 passed, 0 failed, exit 0 | code/results/stage2-docker-2026-11-27-214132.txt (current time read through CarbonImmutable::now(), SOLID #13, commit 65195a6) |
 
 ---
 
