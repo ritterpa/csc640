@@ -7,8 +7,8 @@ use App\Models\Run;
 use App\Models\Script;
 use App\Support\DateInput;
 use App\Support\Format;
+use Carbon\CarbonImmutable;
 use DateTimeImmutable;
-use DateTimeZone;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -76,7 +76,7 @@ class StartRun
         }
 
         $script->fill($details);
-        $script->ModifiedDateUtc = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        $script->ModifiedDateUtc = CarbonImmutable::now('UTC');
         $script->save();
         return $script;
     }

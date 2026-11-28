@@ -9,8 +9,7 @@ use App\Models\Run;
 use App\Support\ApiInput;
 use App\Support\DateInput;
 use App\Support\Format;
-use DateTimeImmutable;
-use DateTimeZone;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -60,7 +59,7 @@ class LogController extends Controller
         ]);
         $timestamp = isset($body['timestampUtc'])
             ? DateInput::parse($body['timestampUtc'], 'timestampUtc')[0]
-            : new DateTimeImmutable('now', new DateTimeZone('UTC'));
+            : CarbonImmutable::now('UTC');
 
         $run = Run::find($id) ?? throw ApiException::notFound("Run $id was not found.");
 

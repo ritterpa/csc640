@@ -11,8 +11,7 @@ use App\Http\Resources\RunSummaryResource;
 use App\Models\Run;
 use App\Support\ApiInput;
 use App\Support\DateInput;
-use DateTimeImmutable;
-use DateTimeZone;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -114,7 +113,7 @@ class RunController extends Controller
         ]);
         $end = isset($body['endTimeUtc'])
             ? DateInput::parse($body['endTimeUtc'], 'endTimeUtc')[0]
-            : new DateTimeImmutable('now', new DateTimeZone('UTC'));
+            : CarbonImmutable::now('UTC');
 
         $run = Run::find($id) ?? throw ApiException::notFound("Run $id was not found.");
 

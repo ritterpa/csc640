@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use Carbon\CarbonImmutable;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Auth\GenericUser;
@@ -23,7 +24,7 @@ final class JwtTokens
 
     public static function issue(string $username, string $scope): string
     {
-        $now = time();
+        $now = CarbonImmutable::now()->getTimestamp();
         return JWT::encode([
             'sub'   => $username,
             'scope' => $scope,
